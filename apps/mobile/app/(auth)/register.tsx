@@ -2,22 +2,27 @@ import { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import { Link } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
+import { Input } from '../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
 import type { UserRole } from '@residenceconnect/shared';
 
-const ROLES: { value: UserRole; label: string }[] = [
-  { value: 'tenant', label: 'Locataire' },
-  { value: 'manager', label: 'Gestionnaire' },
-  { value: 'technician', label: 'Technicien' },
+const ROLES: {
+  value: UserRole;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}[] = [
+  { value: 'tenant', label: 'Locataire', icon: 'home-outline' },
+  { value: 'manager', label: 'Gestionnaire', icon: 'briefcase-outline' },
+  { value: 'technician', label: 'Technicien', icon: 'construct-outline' },
 ];
 
 export default function RegisterScreen() {
@@ -44,7 +49,13 @@ export default function RegisterScreen() {
     setLoading(true);
     setError(null);
 
-    const { error: authError } = await signUp(email, password, fullName, role, phone || undefined);
+    const { error: authError } = await signUp(
+      email,
+      password,
+      fullName,
+      role,
+      phone || undefined
+    );
 
     if (authError) {
       setError(authError.message);
@@ -58,12 +69,15 @@ export default function RegisterScreen() {
   if (success) {
     return (
       <View style={styles.successContainer}>
-        <Text style={styles.successTitle}>Inscription réussie !</Text>
+        <View style={styles.successIcon}>
+          <Ionicons name="checkmark-circle" size={64} color="#22c55e" />
+        </View>
+        <Text style={styles.successTitle}>Compte créé !</Text>
         <Text style={styles.successText}>
-          Vérifiez votre email pour confirmer votre compte.
+          Votre compte a bien été créé. Vous pouvez maintenant vous connecter.
         </Text>
-        <Link href="/(auth)/login" style={styles.link}>
-          Retour à la connexion
+        <Link href="/(auth)/login" asChild>
+          <Button title="Aller à la connexion" style={styles.successBtn} />
         </Link>
       </View>
     );
@@ -72,79 +86,102 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView contentContainerStyle={styles.inner}>
-        <Text style={styles.title}>Créer un compte</Text>
-
-        {error && <Text style={styles.error}>{error}</Text>}
-
-        <TextInput
-          style={styles.input}
-          placeholder="Nom complet *"
-          value={fullName}
-          onChangeText={setFullName}
-          autoComplete="name"
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Email *"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Téléphone"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          autoComplete="tel"
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Mot de passe * (min. 8 caractères)"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoComplete="new-password"
-        />
-
-        <Text style={styles.label}>Votre rôle</Text>
-        <View style={styles.roleContainer}>
-          {ROLES.map((r) => (
-            <TouchableOpacity
-              key={r.value}
-              style={[styles.roleButton, role === r.value && styles.roleButtonActive]}
-              onPress={() => setRole(r.value)}
-            >
-              <Text style={[styles.roleText, role === r.value && styles.roleTextActive]}>
-                {r.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>Créer un compte</Text>
+          <Text style={styles.subtitle}>Rejoignez ResidenceConnect</Text>
         </View>
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleRegister}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>S'inscrire</Text>
+        <View style={styles.card}>
+          {error && (
+            <View style={styles.errorBox}>
+              <Ionicons name="alert-circle" size={18} color="#ef4444" />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
           )}
-        </TouchableOpacity>
 
-        <Link href="/(auth)/login" style={styles.link}>
-          Déjà un compte ? Se connecter
-        </Link>
+          <Input
+            icon="person-outline"
+            placeholder="Nom complet *"
+            value={fullName}
+            onChangeText={setFullName}
+            autoComplete="name"
+          />
+
+          <Input
+            icon="mail-outline"
+            placeholder="Adresse email *"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+          />
+
+          <Input
+            icon="call-outline"
+            placeholder="Téléphone"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+            autoComplete="tel"
+          />
+
+          <Input
+            icon="lock-closed-outline"
+            placeholder="Mot de passe * (min. 8 caractères)"
+            value={password}
+            onChangeText={setPassword}
+            isPassword
+            autoComplete="new-password"
+          />
+
+          <Text style={styles.roleLabel}>Votre rôle</Text>
+          <View style={styles.roleRow}>
+            {ROLES.map((r) => {
+              const active = role === r.value;
+              return (
+                <TouchableOpacity
+                  key={r.value}
+                  style={[styles.roleCard, active && styles.roleCardActive]}
+                  onPress={() => setRole(r.value)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name={r.icon}
+                    size={22}
+                    color={active ? '#fff' : '#64748b'}
+                  />
+                  <Text
+                    style={[styles.roleText, active && styles.roleTextActive]}
+                  >
+                    {r.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <Button
+            title="S'inscrire"
+            onPress={handleRegister}
+            loading={loading}
+            style={styles.submit}
+          />
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Déjà un compte ? </Text>
+          <Link href="/(auth)/login" style={styles.footerLink}>
+            Se connecter
+          </Link>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -153,105 +190,128 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f1f5f9',
   },
-  inner: {
+  scroll: {
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
     paddingVertical: 40,
-    gap: 12,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 24,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1e3a5f',
-    textAlign: 'center',
-    marginBottom: 16,
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#0f172a',
+    letterSpacing: -0.5,
   },
-  label: {
+  subtitle: {
     fontSize: 14,
+    color: '#64748b',
+    marginTop: 6,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 24,
+    gap: 14,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 3,
+  },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#fef2f2',
+    borderRadius: 12,
+    padding: 12,
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 13,
+    flex: 1,
+  },
+  roleLabel: {
+    fontSize: 13,
     fontWeight: '600',
     color: '#475569',
-    marginTop: 4,
+    marginTop: 2,
+    marginLeft: 2,
   },
-  input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#1e293b',
-  },
-  roleContainer: {
+  roleRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
-  roleButton: {
+  roleCard: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 1,
+    height: 76,
+    borderRadius: 14,
+    borderWidth: 1.5,
     borderColor: '#e2e8f0',
     backgroundColor: '#fff',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
-  roleButtonActive: {
+  roleCardActive: {
     borderColor: '#1e3a5f',
     backgroundColor: '#1e3a5f',
   },
   roleText: {
-    fontSize: 13,
-    color: '#475569',
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748b',
   },
   roleTextActive: {
     color: '#fff',
   },
-  button: {
-    backgroundColor: '#1e3a5f',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 8,
+  submit: {
+    marginTop: 6,
   },
-  buttonDisabled: {
-    opacity: 0.6,
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 24,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  error: {
-    color: '#ef4444',
+  footerText: {
+    color: '#64748b',
     fontSize: 14,
-    textAlign: 'center',
   },
-  link: {
+  footerLink: {
     color: '#1e3a5f',
-    textAlign: 'center',
-    marginTop: 8,
     fontSize: 14,
+    fontWeight: '700',
   },
   successContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#f8fafc',
+    padding: 32,
+    backgroundColor: '#f1f5f9',
     gap: 12,
+  },
+  successIcon: {
+    marginBottom: 8,
   },
   successTitle: {
     fontSize: 24,
-    fontWeight: '700',
-    color: '#22c55e',
+    fontWeight: '800',
+    color: '#0f172a',
   },
   successText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#64748b',
     textAlign: 'center',
+    lineHeight: 22,
+  },
+  successBtn: {
+    marginTop: 16,
+    alignSelf: 'stretch',
   },
 });
