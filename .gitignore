@@ -1,0 +1,38 @@
+# Dépendances
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+dist/
+build/
+.expo/
+*.tsbuildinfo
+
+# Environnement — NE JAMAIS COMMITTER .env
+.env
+.env.local
+.env.*.local
+
+# Supabase local (si utilisé)
+supabase/.branches/
+supabase/.temp/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Turborepo
+.turbo/
+
+# Tests
+coverage/
+
+# IDE
+.vscode/settings.json
+.idea/

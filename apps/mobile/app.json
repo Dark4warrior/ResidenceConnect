@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "ResidenceConnect",
+    "slug": "residenceconnect",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "residenceconnect",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.residenceconnect.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1e3a5f",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.residenceconnect.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "ResidenceConnect a besoin d'accéder à votre caméra pour photographier les incidents."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "ResidenceConnect a besoin d'accéder à vos photos pour joindre des images aux signalements."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
