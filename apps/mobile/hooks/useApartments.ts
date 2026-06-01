@@ -17,10 +17,14 @@ export function useApartments() {
   const [loading, setLoading] = useState(true);
 
   const fetchApartments = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('apartments')
       .select('id, unit_number, floor, residence:residences(id, name)')
       .order('unit_number');
+
+    if (error) {
+      console.warn('[useApartments] erreur de chargement :', error.message);
+    }
 
     setApartments((data as unknown as ApartmentItem[]) ?? []);
     setLoading(false);
