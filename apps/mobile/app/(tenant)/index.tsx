@@ -6,8 +6,8 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { useState, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { useTickets } from '../../hooks/useTickets';
@@ -18,6 +18,14 @@ export default function TenantHomeScreen() {
   const { tickets, loading, refetch } = useTickets();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+
+  // Recharge la liste chaque fois que l'écran reçoit le focus
+  // (ex : retour depuis l'écran de création d'un signalement).
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);

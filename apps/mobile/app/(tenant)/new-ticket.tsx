@@ -35,6 +35,14 @@ const CATEGORY_ICONS: Record<TicketCategory, keyof typeof Ionicons.glyphMap> = {
   other: 'ellipsis-horizontal-circle-outline',
 };
 
+// Exemple de titre proposé selon la catégorie sélectionnée
+const TITLE_EXAMPLES: Record<TicketCategory, string> = {
+  plumbing: "Ex : Fuite d'eau sous l'évier",
+  electricity: 'Ex : Panne de courant dans le salon',
+  elevator: 'Ex : Ascenseur bloqué au 3e étage',
+  other: 'Ex : Serrure de la porte d’entrée cassée',
+};
+
 export default function NewTicketScreen() {
   const { profile } = useAuth();
   const { apartments, loading: loadingApts } = useApartments();
@@ -212,7 +220,7 @@ export default function NewTicketScreen() {
         <View style={styles.section}>
           <Input
             label="Titre"
-            placeholder="Ex : Fuite sous l'évier"
+            placeholder={TITLE_EXAMPLES[category]}
             value={title}
             onChangeText={setTitle}
             maxLength={100}
