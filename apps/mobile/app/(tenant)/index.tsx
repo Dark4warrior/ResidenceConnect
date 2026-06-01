@@ -1,23 +1,82 @@
-import { View, Text, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  RefreshControl,
+  ActivityIndicator,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
+import { useTickets } from '../../hooks/useTickets';
+import { TicketCard } from '../../components/tickets/TicketCard';
 
 export default function TenantHomeScreen() {
   const { profile } = useAuth();
+  const { tickets, loading, refetch } = useTickets();
+  const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.greeting}>
-        Bonjour, {profile?.full_name ?? '…'}
-      </Text>
-      <Text style={styles.subtitle}>Vos signalements d'incidents</Text>
-      <View style={styles.placeholder}>
-        <Text style={styles.placeholderText}>
-          Aucun signalement pour le moment.
-        </Text>
-        <Text style={styles.placeholderText}>
-          Appuyez sur "Nouveau" pour créer un signalement.
-        </Text>
-      </View>
+      <FlatList
+        data={tickets}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.list}
+        ListHeaderComponent={
+          <View style={styles.headerBlock}>
+            <Text style={styles.greeting}>
+              Bonjour, {profile?.full_name ?? '…'}
+            </Text>
+            <Text style={styles.subtitle}>
+              {tickets.length > 0
+                ? `${tickets.length} signalement${tickets.length > 1 ? 's' : ''}`
+                : 'Vos signalements d’incidents'}
+            </Text>
+          </View>
+        }
+        renderItem={({ item }) => (
+          <TicketCard
+            ticket={item}
+            onPress={() => router.push(`/(tenant)/ticket/${item.id}`)}
+          />
+        )}
+        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        ListEmptyComponent={
+          loading ? (
+            <ActivityIndicator
+              color="#1e3a5f"
+              size="large"
+              style={{ marginTop: 80 }}
+            />
+          ) : (
+            <View style={styles.empty}>
+              <View style={styles.emptyIcon}>
+                <Ionicons
+                  name="documents-outline"
+                  size={36}
+                  color="#94a3b8"
+                />
+              </View>
+              <Text style={styles.emptyTitle}>Aucun signalement</Text>
+              <Text style={styles.emptyText}>
+                Appuyez sur l&apos;onglet « Nouveau » pour signaler un incident.
+              </Text>
+            </View>
+          )
+        }
+      />
     </View>
   );
 }
@@ -25,29 +84,51 @@ export default function TenantHomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f1f5f9',
+  },
+  list: {
     padding: 16,
+    flexGrow: 1,
+  },
+  headerBlock: {
+    marginBottom: 16,
   },
   greeting: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 4,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0f172a',
   },
   subtitle: {
     fontSize: 14,
     color: '#64748b',
-    marginBottom: 24,
+    marginTop: 2,
   },
-  placeholder: {
+  empty: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    paddingTop: 80,
+    gap: 10,
   },
-  placeholderText: {
+  emptyIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#e2e8f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  emptyTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  emptyText: {
     fontSize: 14,
     color: '#94a3b8',
     textAlign: 'center',
+    paddingHorizontal: 40,
+    lineHeight: 20,
   },
 });
