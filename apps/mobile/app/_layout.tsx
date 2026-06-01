@@ -1,16 +1,18 @@
 import { useEffect } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useAuth } from '../hooks/useAuth';
 import type { UserRole } from '@residenceconnect/shared';
 
-function getRoleRoute(role: UserRole): string {
+/** Groupe de routes correspondant à chaque rôle. */
+function getRoleGroup(role: UserRole): string {
   switch (role) {
     case 'tenant':
-      return '/(tenant)';
+      return '(tenant)';
     case 'manager':
-      return '/(manager)';
+      return '(manager)';
     case 'technician':
-      return '/(technician)';
+      return '(technician)';
   }
 }
 
@@ -22,21 +24,35 @@ export default function RootLayout() {
   useEffect(() => {
     if (loading) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
+    const currentGroup = segments[0];
+    const inAuthGroup = currentGroup === '(auth)';
 
-    if (!session) {
+    // Non connecté → forcer l'écran de connexion
+    if (!session || !profile) {
       if (!inAuthGroup) {
         router.replace('/(auth)/login');
       }
       return;
     }
 
-    if (session && profile) {
-      if (inAuthGroup) {
-        router.replace(getRoleRoute(profile.role) as never);
-      }
+    // Connecté → garantir qu'on est dans le groupe correspondant au rôle.
+    // Indispensable : les trois groupes partagent l'URL "/", donc au
+    // démarrage à froid Expo Router peut afficher le mauvais espace.
+    const targetGroup = getRoleGroup(profile.role);
+    if (currentGroup !== targetGroup) {
+      router.replace(`/${targetGroup}` as never);
     }
-  }, [session, profile, loading, segments]);
+  }, [session, profile, loading, segments, router]);
+
+  // Tant que la session/le profil se charge, on affiche un écran neutre
+  // pour éviter le flash vers un espace incorrect.
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#1e3a5f" />
+      </View>
+    );
+  }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -47,3 +63,12 @@ export default function RootLayout() {
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  loader: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f1f5f9',
+  },
+});
