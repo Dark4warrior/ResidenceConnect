@@ -73,18 +73,22 @@ export function useAuth() {
     role: Profile['role'],
     phone?: string
   ) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
-
-    if (error || !data.user) return { error };
-
-    const { error: profileError } = await supabase.from('profiles').insert({
-      auth_user_id: data.user.id,
-      full_name: fullName,
-      role,
-      phone: phone ?? null,
+    // Les métadonnées (full_name, role, phone) sont lues par le trigger
+    // PostgreSQL handle_new_user() qui crée automatiquement le profil.
+    // Aucune insertion manuelle dans "profiles" n'est nécessaire.
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          role,
+          phone: phone ?? null,
+        },
+      },
     });
 
-    return { error: profileError };
+    return { error };
   };
 
   const signOut = async () => {
