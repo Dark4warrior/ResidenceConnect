@@ -12,6 +12,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { useTickets } from '../../hooks/useTickets';
 import { TicketCard } from '../../components/tickets/TicketCard';
+import { Avatar } from '../../components/ui/Avatar';
+import { colors, spacing, radius, fontSize, fontWeight } from '../../theme';
 
 export default function TenantHomeScreen() {
   const { profile } = useAuth();
@@ -33,6 +35,8 @@ export default function TenantHomeScreen() {
     setRefreshing(false);
   };
 
+  const pending = tickets.filter((t) => t.status !== 'resolved').length;
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -41,14 +45,33 @@ export default function TenantHomeScreen() {
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <View style={styles.headerBlock}>
-            <Text style={styles.greeting}>
-              Bonjour, {profile?.full_name ?? '…'}
-            </Text>
-            <Text style={styles.subtitle}>
-              {tickets.length > 0
-                ? `${tickets.length} signalement${tickets.length > 1 ? 's' : ''}`
-                : 'Vos signalements d’incidents'}
-            </Text>
+            <View style={styles.headerRow}>
+              <Avatar name={profile?.full_name ?? '?'} size={48} />
+              <View style={styles.headerText}>
+                <Text style={styles.hello}>Bonjour 👋</Text>
+                <Text style={styles.name} numberOfLines={1}>
+                  {profile?.full_name ?? '…'}
+                </Text>
+              </View>
+            </View>
+
+            {tickets.length > 0 && (
+              <View style={styles.summary}>
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryNumber}>{tickets.length}</Text>
+                  <Text style={styles.summaryLabel}>Total</Text>
+                </View>
+                <View style={styles.summaryDivider} />
+                <View style={styles.summaryItem}>
+                  <Text style={[styles.summaryNumber, { color: colors.warning }]}>
+                    {pending}
+                  </Text>
+                  <Text style={styles.summaryLabel}>En cours</Text>
+                </View>
+              </View>
+            )}
+
+            <Text style={styles.sectionTitle}>Mes signalements</Text>
           </View>
         }
         renderItem={({ item }) => (
@@ -57,14 +80,18 @@ export default function TenantHomeScreen() {
             onPress={() => router.push(`/(tenant)/ticket/${item.id}`)}
           />
         )}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
         }
         ListEmptyComponent={
           loading ? (
             <ActivityIndicator
-              color="#1e3a5f"
+              color={colors.primary}
               size="large"
               style={{ marginTop: 80 }}
             />
@@ -74,7 +101,7 @@ export default function TenantHomeScreen() {
                 <Ionicons
                   name="documents-outline"
                   size={36}
-                  color="#94a3b8"
+                  color={colors.textLight}
                 />
               </View>
               <Text style={styles.emptyTitle}>Aucun signalement</Text>
@@ -92,49 +119,92 @@ export default function TenantHomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: colors.background,
   },
   list: {
-    padding: 16,
+    padding: spacing.lg,
     flexGrow: 1,
   },
   headerBlock: {
-    marginBottom: 16,
+    marginBottom: spacing.lg,
+    gap: spacing.lg,
   },
-  greeting: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#64748b',
-    marginTop: 2,
+  headerText: {
+    flex: 1,
+  },
+  hello: {
+    fontSize: fontSize.md,
+    color: colors.textMuted,
+  },
+  name: {
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.extrabold,
+    color: colors.text,
+  },
+  summary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.lg,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  summaryItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  summaryNumber: {
+    fontSize: fontSize.xxl,
+    fontWeight: fontWeight.extrabold,
+    color: colors.primary,
+  },
+  summaryLabel: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+  },
+  summaryDivider: {
+    width: 1,
+    height: 36,
+    backgroundColor: colors.border,
+  },
+  sectionTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    color: colors.text,
   },
   empty: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 80,
-    gap: 10,
+    paddingTop: 60,
+    gap: spacing.md,
   },
   emptyIcon: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
   },
   emptyTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#334155',
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    color: colors.textMuted,
   },
   emptyText: {
-    fontSize: 14,
-    color: '#94a3b8',
+    fontSize: fontSize.md,
+    color: colors.textLight,
     textAlign: 'center',
     paddingHorizontal: 40,
     lineHeight: 20,
