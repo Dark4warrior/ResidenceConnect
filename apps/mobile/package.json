@@ -9,7 +9,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "jest --watchAll=false",
+    "test": "jest --coverage --watchAll=false",
     "lint": "eslint . --ext .ts,.tsx",
     "type-check": "tsc --noEmit"
   },
@@ -50,11 +50,10 @@
   },
   "jest": {
     "preset": "jest-expo",
-    "setupFilesAfterFramework": [
+    "setupFilesAfterEnv": [
       "@testing-library/react-native/extend-expect"
     ],
     "collectCoverageFrom": [
-      "src/**/*.{ts,tsx}",
       "hooks/**/*.{ts,tsx}",
       "!**/*.d.ts"
     ],
