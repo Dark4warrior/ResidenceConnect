@@ -11,6 +11,7 @@ import {
   useTicketHistory,
   formatHistoryTransition,
 } from '../hooks/useTicketHistory';
+import { useTicketPhotos } from '../hooks/useTicketPhotos';
 import { formatDateTime } from '../lib/format';
 import { StatusBadge, UrgencyBadge } from '../components/Badges';
 
@@ -27,6 +28,7 @@ export function TicketDetail() {
     error: historyError,
     refetch: refetchHistory,
   } = useTicketHistory(id);
+  const { photos } = useTicketPhotos(id);
 
   const [saving, setSaving] = useState(false);
   const [assigning, setAssigning] = useState(false);
@@ -109,6 +111,31 @@ export function TicketDetail() {
           {ticket.description}
         </p>
       </div>
+
+      {photos.length > 0 ? (
+        <div className="mt-6">
+          <p className="text-sm font-medium text-slate-700">
+            Photos ({photos.length})
+          </p>
+          <div className="mt-2 flex flex-wrap gap-3">
+            {photos.map((p) => (
+              <a
+                key={p.id}
+                href={p.url}
+                target="_blank"
+                rel="noreferrer"
+                className="block"
+              >
+                <img
+                  src={p.url}
+                  alt="Photo du signalement"
+                  className="h-28 w-28 rounded-lg border border-slate-200 object-cover transition-opacity hover:opacity-80"
+                />
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-6">
         <p className="text-sm font-medium text-slate-700">Changer le statut</p>
