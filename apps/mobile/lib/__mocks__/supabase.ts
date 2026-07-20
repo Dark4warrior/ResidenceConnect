@@ -12,6 +12,9 @@ export const supabase = {
   rpc: jest.fn(),
   channel: jest.fn(),
   removeChannel: jest.fn(),
+  storage: {
+    from: jest.fn(),
+  },
   auth: {
     getSession: jest.fn(),
     onAuthStateChange: jest.fn(),
