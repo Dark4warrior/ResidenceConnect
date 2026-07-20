@@ -5,7 +5,7 @@ import {
 } from '@residenceconnect/shared';
 import { useTickets } from '../hooks/useTickets';
 import { filterTickets, sortByUrgencyThenDate } from '../lib/filters';
-import { ticketsToCsv } from '../lib/csv';
+import { ticketsToCsv, UTF8_BOM } from '../lib/csv';
 import { formatDate } from '../lib/format';
 import { EMPTY_FILTERS, type TicketFilters } from '../types';
 import { FilterBar } from '../components/FilterBar';
@@ -33,9 +33,11 @@ export function Dashboard() {
   );
 
   const handleExport = () => {
+    // Le BOM UTF-8 est indispensable pour qu'Excel affiche correctement les
+    // accents ; sans lui le fichier est lu en ANSI.
     downloadTextFile(
       'tickets-residenceconnect.csv',
-      ticketsToCsv(visible),
+      UTF8_BOM + ticketsToCsv(visible),
       'text/csv;charset=utf-8;'
     );
   };
