@@ -120,6 +120,28 @@ métier pure (scoring d'urgence, filtres, KPIs, export CSV, formatage) et les
 hooks de données sont couverts par des tests unitaires ; les composants
 critiques du web par des tests d'intégration (Testing Library).
 
+### Tests de sécurité RLS
+
+Les politiques Row Level Security sont vérifiées **contre un projet Supabase
+réel** par un script dédié : il authentifie les trois rôles et contrôle que
+chacun ne voit et ne modifie que ce qui le concerne.
+
+```bash
+export SUPABASE_URL=https://<ref>.supabase.co
+export SUPABASE_ANON_KEY=<clé anon>
+export RLS_TEST_PASSWORD=<mot de passe des comptes de démo>
+./scripts/test-rls.sh
+```
+
+Prérequis : les trois comptes de démonstration et le jeu de données de
+`supabase/seed.sql`. Le script est **rejouable** (il restaure l'état qu'il
+modifie) et sort en code ≠ 0 au moindre échec, ce qui le rend utilisable en
+intégration continue.
+
+Il couvre notamment l'invariant central du projet : **un locataire ne peut ni
+lire ni modifier les données d'un autre**, l'historique d'audit est
+**non réinscriptible**, et un visiteur anonyme n'obtient **aucune donnée**.
+
 ## Base de données Supabase
 
 Les migrations SQL sont dans `supabase/migrations/`, à appliquer dans l'ordre :
