@@ -22,6 +22,8 @@ import { supabase } from '../../../lib/supabase';
 import { useTickets } from '../../../hooks/useTickets';
 import { useTechnicians } from '../../../hooks/useTechnicians';
 import { useTicketHistory } from '../../../hooks/useTicketHistory';
+import { useTicketPhotos } from '../../../hooks/useTicketPhotos';
+import { TicketPhotos } from '../../../components/tickets/TicketPhotos';
 import {
   StatusBadge,
   UrgencyBadge,
@@ -70,6 +72,7 @@ export default function ManagerTicketDetailScreen() {
     error: historyError,
     refetch: refetchHistory,
   } = useTicketHistory(id);
+  const { photos } = useTicketPhotos(id);
 
   const [ticket, setTicket] = useState<TicketDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -188,6 +191,8 @@ export default function ManagerTicketDetailScreen() {
           <Text style={styles.sectionTitle}>Description</Text>
           <Text style={styles.description}>{ticket.description}</Text>
         </View>
+
+        <TicketPhotos photos={photos} />
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Changer le statut</Text>
