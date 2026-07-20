@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useAuth } from '../hooks/useAuth';
+import { useNotifications } from '../hooks/useNotifications';
 import type { UserRole } from '@residenceconnect/shared';
 
 /** Groupe de routes correspondant à chaque rôle. */
@@ -20,6 +21,11 @@ export default function RootLayout() {
   const { session, profile, loading } = useAuth();
   const router = useRouter();
   const segments = useSegments();
+
+  // Enregistre l'appareil pour les notifications push dès qu'un profil est
+  // connu. Le hook ne fait rien tant que `profile` est null (déconnecté), et
+  // l'enregistrement est idempotent (upsert sur le token).
+  useNotifications(profile?.id ?? null);
 
   useEffect(() => {
     if (loading) return;

@@ -11,6 +11,7 @@ import { useState, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { useTickets } from '../../hooks/useTickets';
+import { useRealtime } from '../../hooks/useRealtime';
 import { TicketCard } from '../../components/tickets/TicketCard';
 import { Avatar } from '../../components/ui/Avatar';
 import { colors, spacing, radius, fontSize, fontWeight } from '../../theme';
@@ -28,6 +29,11 @@ export default function TenantHomeScreen() {
       refetch();
     }, [refetch])
   );
+
+  // Temps réel : le locataire voit immédiatement l'évolution de ses
+  // signalements (prise en charge, résolution) sans rafraîchir manuellement.
+  // Le RLS garantit qu'il ne reçoit que les événements le concernant.
+  useRealtime({ table: 'tickets', onChange: refetch });
 
   const onRefresh = async () => {
     setRefreshing(true);
