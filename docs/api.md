@@ -203,12 +203,37 @@ curl -X POST 'http://127.0.0.1:54321/functions/v1/notify-status-change' \
 ## Commandes — déploiement
 
 ```bash
-# Déployer chaque fonction
+# 1. S'authentifier (ouvre le navigateur) — obligatoire avant tout `link`
+supabase login
+
+# 2. Lier le dépôt local au projet distant
+supabase link --project-ref <PROJECT_REF>
+
+# 3. Déployer chaque fonction
 supabase functions deploy priority-scoring
 supabase functions deploy notify-status-change
-
-# Secrets (notify-status-change) — SUPABASE_URL est souvent déjà injecté
-supabase secrets set SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
 ```
 
+> **Aucun secret à créer.** `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` font
+> partie des **« Default secrets »** réservés, injectés automatiquement dans
+> chaque projet (Dashboard → Edge Functions → Secrets). Ne jamais les passer
+> manuellement via `supabase secrets set` : la clé se retrouverait dans
+> l'historique du shell. `supabase secrets set` ne sert qu'aux secrets
+> **personnalisés** (clé d'API tierce, etc.).
+>
+> Note : `SUPABASE_SERVICE_ROLE_KEY` est marquée *deprecated* par Supabase au
+> profit de `SUPABASE_SECRET_KEYS` (dictionnaire JSON). La variable historique
+> reste fonctionnelle ; migration à prévoir si Supabase la retire.
+
 Après déploiement, configurer le webhook Dashboard comme décrit ci-dessus.
+
+### Erreur fréquente au `link`
+
+```
+Unexpected error retrieving remote project status:
+"Your account does not have the necessary privileges to access this endpoint."
+```
+
+Message trompeur : il ne s'agit pas d'un problème de droits mais d'une **absence
+d'authentification**. Le CLI appelle l'API sans jeton. Lancer `supabase login`
+(ou définir `SUPABASE_ACCESS_TOKEN`) avant de relancer `supabase link`.
