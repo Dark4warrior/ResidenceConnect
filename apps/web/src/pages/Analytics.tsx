@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import {
   TICKET_STATUS_LABELS,
   TICKET_CATEGORY_LABELS,
@@ -6,14 +5,14 @@ import {
   type TicketStatus,
 } from '@residenceconnect/shared';
 import { useTickets } from '../hooks/useTickets';
-import { computeKpis } from '../lib/analytics';
+import { useAnalytics } from '../hooks/useAnalytics';
 import { formatDuration } from '../lib/format';
 import { StatCard } from '../components/StatCard';
 
 /** Page d'analyse : indicateurs clés et répartitions. */
 export function Analytics() {
   const { tickets, loading, error } = useTickets();
-  const kpis = useMemo(() => computeKpis(tickets), [tickets]);
+  const { kpis, breakdown, source } = useAnalytics(tickets);
 
   if (loading) return <p className="text-sm text-slate-400">Chargement…</p>;
   if (error)
@@ -23,7 +22,19 @@ export function Analytics() {
 
   return (
     <section>
-      <h1 className="mb-4 text-2xl font-bold text-slate-900">Analytics</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-900">Analytics</h1>
+        <span
+          className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500"
+          title={
+            source === 'sql'
+              ? 'Indicateurs agrégés par une fonction PostgreSQL (RPC)'
+              : 'Indicateurs calculés côté client (fonction RPC non déployée)'
+          }
+        >
+          {source === 'sql' ? 'Agrégation SQL' : 'Calcul client'}
+        </span>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Tickets au total" value={kpis.total} />
@@ -57,6 +68,48 @@ export function Analytics() {
           total={kpis.total}
         />
       </div>
+
+      {source === 'sql' && breakdown.length > 0 ? (
+        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5">
+          <p className="text-sm font-semibold text-slate-700">
+            Récurrence et délai par catégorie
+          </p>
+          <div className="mt-4 overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="text-left text-xs uppercase tracking-wide text-slate-400">
+                <tr>
+                  <th className="pb-2 font-semibold">Catégorie</th>
+                  <th className="pb-2 text-right font-semibold">Signalements</th>
+                  <th className="pb-2 text-right font-semibold">Résolus</th>
+                  <th className="pb-2 text-right font-semibold">Délai moyen</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {breakdown.map((row) => (
+                  <tr key={row.category}>
+                    <td className="py-2 text-slate-700">
+                      {TICKET_CATEGORY_LABELS[row.category]}
+                    </td>
+                    <td className="py-2 text-right tabular-nums text-slate-700">
+                      {row.total}
+                    </td>
+                    <td className="py-2 text-right tabular-nums text-slate-500">
+                      {row.resolved}
+                    </td>
+                    <td className="py-2 text-right tabular-nums text-slate-500">
+                      {formatDuration(
+                        row.avg_resolution_hours === null
+                          ? null
+                          : Math.round(row.avg_resolution_hours)
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
