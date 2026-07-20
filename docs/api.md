@@ -134,18 +134,26 @@ Message notification (exemple) :
 Traduction des statuts : `pending` → En attente, `in_progress` → En cours,
 `resolved` → Résolu.
 
-### Brancher le Database Webhook
+### Déclenchement : la migration 007
 
-1. Dashboard Supabase → **Database** → **Webhooks** → **Create a new hook**.
-2. Table : `tickets` · Événement : `UPDATE`.
-3. Type : **Supabase Edge Functions** → `notify-status-change`
-   (ou URL HTTP vers
-   `https://<PROJECT_REF>.supabase.co/functions/v1/notify-status-change`).
-4. Ajouter l'en-tête `Authorization: Bearer <SUPABASE_ANON_KEY>` (ou service role)
-   pour satisfaire `verify_jwt = true`.
-5. Vérifier que les secrets `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` sont
-   disponibles pour la fonction (injectés automatiquement en prod Supabase ;
-   à exporter en local si besoin).
+Le lien entre le changement de statut et cette fonction est **versionné** dans
+`supabase/migrations/007_status_change_webhook.sql`, plutôt que configuré à la
+main dans le dashboard. La migration :
+
+- crée un trigger `AFTER UPDATE ON public.tickets` déclenché uniquement quand le
+  statut change (`WHEN (OLD.status IS DISTINCT FROM NEW.status)`) ;
+- appelle la fonction via `pg_net` (`net.http_post`), de façon asynchrone : un
+  échec du webhook ne bloque jamais la mise à jour du ticket ;
+- envoie le payload `{ type, table, schema, record, old_record }` attendu par la
+  fonction ;
+- joint la **clé anon publique** dans l'en-tête `Authorization` pour satisfaire
+  `verify_jwt`. Elle ne donne aucun privilège : la fonction écrit ensuite avec
+  sa propre clé `service_role`, injectée par Supabase.
+
+Il suffit donc d'appliquer les migrations et de déployer la fonction — aucune
+configuration manuelle de webhook. Les secrets `SUPABASE_URL` et
+`SUPABASE_SERVICE_ROLE_KEY` sont fournis automatiquement à la fonction en
+production (voir les « Default secrets » du projet).
 
 ---
 
@@ -225,7 +233,8 @@ supabase functions deploy notify-status-change
 > profit de `SUPABASE_SECRET_KEYS` (dictionnaire JSON). La variable historique
 > reste fonctionnelle ; migration à prévoir si Supabase la retire.
 
-Après déploiement, configurer le webhook Dashboard comme décrit ci-dessus.
+Déployer les fonctions **avant** d'appliquer la migration 007, qui appelle
+`notify-status-change`.
 
 ### Erreur fréquente au `link`
 
