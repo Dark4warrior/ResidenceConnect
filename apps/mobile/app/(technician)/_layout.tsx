@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { HeaderBackButton } from '../../components/ui/HeaderBackButton';
 
 export default function TechnicianLayout() {
   return (
@@ -34,7 +35,15 @@ export default function TechnicianLayout() {
           ),
         }}
       />
-      <Tabs.Screen name="ticket/[id]" options={{ href: null }} />
+      <Tabs.Screen
+        name="ticket/[id]"
+        options={{
+          href: null,
+          title: 'Détail du signalement',
+          // Écran hors barre d'onglets : il faut fournir le retour nous-mêmes.
+          headerLeft: () => <HeaderBackButton fallbackHref="/(technician)" />,
+        }}
+      />
     </Tabs>
   );
 }

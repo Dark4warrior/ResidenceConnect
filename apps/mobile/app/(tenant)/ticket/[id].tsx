@@ -8,7 +8,6 @@ import {
   Image,
   Modal,
   Pressable,
-  Dimensions,
 } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -47,6 +46,21 @@ function formatDateTime(iso: string): string {
     minute: '2-digit',
   });
 }
+
+/** Étapes du cycle de vie d'un signalement, dans l'ordre. */
+const STEPS = [
+  { key: 'pending', label: 'Reçu', icon: 'document-text-outline' },
+  { key: 'in_progress', label: 'En cours', icon: 'construct-outline' },
+  { key: 'resolved', label: 'Résolu', icon: 'checkmark-done-outline' },
+] as const;
+
+/** Icône associée à chaque catégorie d'incident. */
+const CATEGORY_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
+  plumbing: 'water-outline',
+  electricity: 'flash-outline',
+  elevator: 'swap-vertical-outline',
+  other: 'ellipsis-horizontal-circle-outline',
+};
 
 export default function TenantTicketDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -116,80 +130,169 @@ export default function TenantTicketDetailScreen() {
     );
   }
 
+
+  const currentStep = STEPS.findIndex((s) => s.key === ticket.status);
+
   return (
     <>
       <Stack.Screen options={{ title: 'Détail du signalement' }} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{ticket.title}</Text>
-
-        <View style={styles.badges}>
-          <StatusBadge status={ticket.status} />
-          <UrgencyBadge level={ticket.urgency_level} />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* En-tête : catégorie, titre, gravité */}
+        <View style={styles.hero}>
+          <View style={styles.heroTop}>
+            <View style={styles.categoryIcon}>
+              <Ionicons
+                name={CATEGORY_ICON[ticket.category] ?? 'alert-circle-outline'}
+                size={22}
+                color={colors.primary}
+              />
+            </View>
+            <Text style={styles.categoryLabel}>
+              {TICKET_CATEGORY_LABELS[ticket.category]}
+            </Text>
+            <View style={styles.flex} />
+            <UrgencyBadge level={ticket.urgency_level} />
+          </View>
+          <Text style={styles.title}>{ticket.title}</Text>
+          <Text style={styles.reference}>
+            Référence {ticket.id.slice(0, 8).toUpperCase()}
+          </Text>
         </View>
 
+        {/* Frise de progression : répond à « où en est ma demande ? » */}
         <View style={styles.card}>
-          <Row
-            icon="pricetag-outline"
-            label="Catégorie"
-            value={TICKET_CATEGORY_LABELS[ticket.category]}
-          />
+          <Text style={styles.cardTitle}>Avancement</Text>
+          <View style={styles.timeline}>
+            {STEPS.map((step, i) => {
+              const done = i <= currentStep;
+              const active = i === currentStep;
+              return (
+                <View key={step.key} style={styles.stepWrapper}>
+                  <View style={styles.stepRow}>
+                    <View
+                      style={[
+                        styles.stepDot,
+                        done && styles.stepDotDone,
+                        active && styles.stepDotActive,
+                      ]}
+                    >
+                      <Ionicons
+                        name={step.icon}
+                        size={16}
+                        color={done ? colors.textOnPrimary : colors.textLight}
+                      />
+                    </View>
+                    {i < STEPS.length - 1 && (
+                      <View
+                        style={[styles.stepLine, i < currentStep && styles.stepLineDone]}
+                      />
+                    )}
+                  </View>
+                  <Text
+                    style={[styles.stepLabel, done && styles.stepLabelDone]}
+                    numberOfLines={1}
+                  >
+                    {step.label}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+          <View style={styles.statusLine}>
+            <StatusBadge status={ticket.status} />
+            <Text style={styles.statusHint}>
+              {ticket.status === 'pending'
+                ? 'Votre signalement a bien été transmis au gestionnaire.'
+                : ticket.status === 'in_progress'
+                  ? 'Un technicien a été assigné et intervient.'
+                  : 'L’incident a été résolu.'}
+            </Text>
+          </View>
+        </View>
+
+        {/* Description */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Description</Text>
+          <Text style={styles.description}>{ticket.description}</Text>
+        </View>
+
+        {/* Photos */}
+        {photos.length > 0 && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
+              Photos ({photos.length})
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.photoRow}>
+                {photos.map((p) => (
+                  <Pressable key={p.id} onPress={() => setFullscreenUri(p.uri)}>
+                    <Image source={{ uri: p.uri }} style={styles.photo} />
+                  </Pressable>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Informations */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Informations</Text>
+          {ticket.apartment ? (
+            <Row
+              icon="business-outline"
+              label="Résidence"
+              value={ticket.apartment.residence?.name ?? '—'}
+            />
+          ) : null}
           {ticket.apartment ? (
             <Row
               icon="home-outline"
               label="Logement"
-              value={`${ticket.apartment.residence?.name ?? ''} · ${ticket.apartment.unit_number}${
-                ticket.apartment.floor ? ` (étage ${ticket.apartment.floor})` : ''
+              value={`${ticket.apartment.unit_number}${
+                ticket.apartment.floor ? ` · étage ${ticket.apartment.floor}` : ''
               }`}
             />
           ) : null}
           <Row
             icon="calendar-outline"
-            label="Créé le"
+            label="Déclaré le"
             value={formatDateTime(ticket.created_at)}
           />
           {ticket.resolved_at ? (
             <Row
-              icon="checkmark-done-outline"
+              icon="checkmark-circle-outline"
               label="Résolu le"
               value={formatDateTime(ticket.resolved_at)}
             />
           ) : null}
         </View>
-
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.description}>{ticket.description}</Text>
-        </View>
-
-        {photos.length > 0 ? (
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Photos</Text>
-            <View style={styles.photoGrid}>
-              {photos.map((photo) => (
-                <Pressable
-                  key={photo.id}
-                  onPress={() => setFullscreenUri(photo.uri)}
-                >
-                  <Image source={{ uri: photo.uri }} style={styles.photoThumb} />
-                </Pressable>
-              ))}
-            </View>
-          </View>
-        ) : null}
       </ScrollView>
 
-      <Modal visible={fullscreenUri !== null} transparent animationType="fade">
+      {/* Photo en plein écran */}
+      <Modal visible={!!fullscreenUri} transparent animationType="fade">
         <Pressable
-          style={styles.fullscreenBackdrop}
+          style={styles.fullscreen}
           onPress={() => setFullscreenUri(null)}
         >
-          {fullscreenUri ? (
+          <Pressable
+            style={styles.fullscreenClose}
+            onPress={() => setFullscreenUri(null)}
+            accessibilityRole="button"
+            accessibilityLabel="Fermer la photo"
+          >
+            <Ionicons name="close" size={28} color="#fff" />
+          </Pressable>
+          {fullscreenUri && (
             <Image
               source={{ uri: fullscreenUri }}
               style={styles.fullscreenImage}
               resizeMode="contain"
             />
-          ) : null}
+          )}
         </Pressable>
       </Modal>
     </>
@@ -207,18 +310,16 @@ function Row({
 }) {
   return (
     <View style={styles.row}>
-      <Ionicons name={icon} size={18} color={colors.textMuted} />
+      <Ionicons name={icon} size={17} color={colors.textLight} />
       <Text style={styles.rowLabel}>{label}</Text>
       <Text style={styles.rowValue}>{value}</Text>
     </View>
   );
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, gap: spacing.lg },
+  content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.md },
   center: {
     flex: 1,
     alignItems: 'center',
@@ -226,52 +327,149 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   notFound: { fontSize: fontSize.base, color: colors.textMuted },
+  flex: { flex: 1 },
+
+  hero: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    ...shadow.card,
+  },
+  heroTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  categoryIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.md,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryLabel: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
+    color: colors.textMuted,
+  },
   title: {
     fontSize: fontSize.xl,
-    fontWeight: fontWeight.extrabold,
+    fontWeight: fontWeight.bold,
     color: colors.text,
+    lineHeight: 28,
   },
-  badges: { flexDirection: 'row', gap: spacing.sm },
+  reference: {
+    fontSize: fontSize.xs,
+    color: colors.textLight,
+    marginTop: spacing.xs,
+    letterSpacing: 0.5,
+  },
+
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.lg,
-    gap: spacing.md,
     ...shadow.card,
   },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  rowLabel: { fontSize: fontSize.md, color: colors.textMuted, width: 90 },
-  rowValue: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.semibold,
-    flex: 1,
-  },
-  sectionTitle: {
-    fontSize: fontSize.base,
+  cardTitle: {
+    fontSize: fontSize.xs,
     fontWeight: fontWeight.bold,
-    color: colors.text,
+    color: colors.textLight,
+    textTransform: 'uppercase',
+    letterSpacing: 0.7,
+    marginBottom: spacing.md,
   },
+
+  timeline: { flexDirection: 'row' },
+  stepWrapper: { flex: 1 },
+  stepRow: { flexDirection: 'row', alignItems: 'center' },
+  stepDot: {
+    width: 34,
+    height: 34,
+    borderRadius: radius.full,
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepDotDone: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  stepDotActive: { ...shadow.brand },
+  stepLine: {
+    flex: 1,
+    height: 3,
+    backgroundColor: colors.border,
+    marginHorizontal: 4,
+    borderRadius: 2,
+  },
+  stepLineDone: { backgroundColor: colors.primary },
+  stepLabel: {
+    fontSize: fontSize.xs,
+    color: colors.textLight,
+    marginTop: spacing.sm,
+    fontWeight: fontWeight.medium,
+  },
+  stepLabelDone: { color: colors.text, fontWeight: fontWeight.semibold },
+
+  statusLine: {
+    marginTop: spacing.lg,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    gap: spacing.sm,
+  },
+  statusHint: {
+    fontSize: fontSize.md,
+    color: colors.textMuted,
+    lineHeight: 20,
+  },
+
   description: {
     fontSize: fontSize.base,
-    color: colors.textMuted,
-    lineHeight: 22,
+    color: colors.text,
+    lineHeight: 23,
   },
-  photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  photoThumb: {
-    width: 96,
-    height: 96,
+
+  photoRow: { flexDirection: 'row', gap: spacing.sm },
+  photo: {
+    width: 108,
+    height: 108,
     borderRadius: radius.md,
     backgroundColor: colors.border,
   },
-  fullscreenBackdrop: {
+
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  rowLabel: { fontSize: fontSize.md, color: colors.textMuted, flex: 1 },
+  rowValue: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
+    color: colors.text,
+    flexShrink: 1,
+    textAlign: 'right',
+  },
+
+  fullscreen: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.92)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fullscreenImage: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_WIDTH,
+  fullscreenImage: { width: '100%', height: '80%' },
+  fullscreenClose: {
+    position: 'absolute',
+    top: 56,
+    right: 24,
+    zIndex: 2,
+    padding: spacing.sm,
   },
 });
