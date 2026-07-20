@@ -13,7 +13,6 @@ import {
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
-  TICKET_CATEGORY_LABELS,
   TICKET_STATUS_LABELS,
   type Ticket,
   type TicketStatus,
@@ -25,12 +24,15 @@ import { useTicketHistory } from '../../../hooks/useTicketHistory';
 import { useTicketPhotos } from '../../../hooks/useTicketPhotos';
 import { TicketPhotos } from '../../../components/tickets/TicketPhotos';
 import {
-  StatusBadge,
-  UrgencyBadge,
-} from '../../../components/tickets/TicketStatusBadge';
+  TicketHero,
+  StatusTimeline,
+  DetailCard,
+  InfoRow,
+  detailStyles,
+} from '../../../components/tickets/TicketDetailParts';
 import { TicketHistoryList } from '../../../components/tickets/TicketHistoryList';
 import { Button } from '../../../components/ui/Button';
-import { colors, spacing, radius, fontSize, fontWeight, shadow } from '../../../theme';
+import { colors, spacing, radius, fontSize, fontWeight } from '../../../theme';
 
 const STATUS_ORDER: TicketStatus[] = ['pending', 'in_progress', 'resolved'];
 
@@ -137,7 +139,7 @@ export default function ManagerTicketDetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
+      <View style={detailStyles.center}>
         <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
@@ -145,7 +147,7 @@ export default function ManagerTicketDetailScreen() {
 
   if (!ticket) {
     return (
-      <View style={styles.center}>
+      <View style={detailStyles.center}>
         <Text style={styles.notFound}>Signalement introuvable.</Text>
       </View>
     );
@@ -154,81 +156,69 @@ export default function ManagerTicketDetailScreen() {
   return (
     <>
       <Stack.Screen options={{ title: 'Détail du signalement' }} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{ticket.title}</Text>
+      <ScrollView
+        style={detailStyles.container}
+        contentContainerStyle={detailStyles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <TicketHero
+          id={ticket.id}
+          title={ticket.title}
+          category={ticket.category}
+          urgency={ticket.urgency_level}
+        />
 
-        <View style={styles.badges}>
-          <StatusBadge status={ticket.status} />
-          <UrgencyBadge level={ticket.urgency_level} />
-        </View>
+        <DetailCard title="Avancement">
+          <StatusTimeline status={ticket.status} />
 
-        <View style={styles.card}>
-          <Row
-            icon="pricetag-outline"
-            label="Catégorie"
-            value={TICKET_CATEGORY_LABELS[ticket.category]}
-          />
-          {ticket.apartment ? (
-            <Row
-              icon="home-outline"
-              label="Logement"
-              value={`${ticket.apartment.residence?.name ?? '—'} · ${ticket.apartment.unit_number}`}
-            />
-          ) : null}
-          <Row
-            icon="person-outline"
-            label="Déclarant"
-            value={ticket.reporter?.full_name ?? '—'}
-          />
-          <Row
-            icon="calendar-outline"
-            label="Créé le"
-            value={formatDateTime(ticket.created_at)}
-          />
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.description}>{ticket.description}</Text>
-        </View>
-
-        <TicketPhotos photos={photos} />
-
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Changer le statut</Text>
-          <View style={styles.statusRow}>
-            {STATUS_ORDER.map((s) => (
-              <TouchableOpacity
-                key={s}
-                style={[
-                  styles.statusBtn,
-                  s === ticket.status && styles.statusBtnActive,
-                ]}
-                disabled={statusSaving || s === ticket.status}
-                onPress={() => void handleStatus(s)}
-                activeOpacity={0.8}
-              >
-                <Text
-                  style={[
-                    styles.statusBtnText,
-                    s === ticket.status && styles.statusBtnTextActive,
-                  ]}
-                >
-                  {TICKET_STATUS_LABELS[s]}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          <View style={styles.statusActions}>
+            <Text style={styles.actionLabel}>Changer le statut</Text>
+            <View style={styles.statusRow}>
+              {STATUS_ORDER.map((s) => {
+                const active = s === ticket.status;
+                return (
+                  <TouchableOpacity
+                    key={s}
+                    style={[styles.statusBtn, active && styles.statusBtnActive]}
+                    disabled={statusSaving || active}
+                    onPress={() => void handleStatus(s)}
+                    activeOpacity={0.8}
+                  >
+                    <Text
+                      style={[styles.statusBtnText, active && styles.statusBtnTextActive]}
+                    >
+                      {TICKET_STATUS_LABELS[s]}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            {statusSaving ? (
+              <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.sm }} />
+            ) : null}
           </View>
-          {statusSaving ? (
-            <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.sm }} />
-          ) : null}
-        </View>
+        </DetailCard>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Assignation</Text>
-          <Text style={styles.assigned}>{assignedLabel}</Text>
+        <DetailCard title="Assignation">
+          <View style={styles.assignRow}>
+            <View style={styles.assignAvatar}>
+              <Ionicons
+                name={ticket.assigned_to ? 'person' : 'person-add-outline'}
+                size={18}
+                color={colors.primary}
+              />
+            </View>
+            <View style={styles.flex}>
+              <Text style={styles.assignName}>{assignedLabel}</Text>
+              <Text style={styles.assignHint}>
+                {ticket.assigned_to
+                  ? 'Technicien responsable de l’intervention'
+                  : 'Aucun technicien pour l’instant'}
+              </Text>
+            </View>
+          </View>
           <Button
-            title="Choisir un technicien"
+            title={ticket.assigned_to ? 'Changer de technicien' : 'Assigner un technicien'}
             variant="secondary"
             loading={assignSaving || loadingTechs}
             onPress={() => setPickerOpen(true)}
@@ -242,7 +232,7 @@ export default function ManagerTicketDetailScreen() {
               <Text style={styles.unassignText}>Retirer l’assignation</Text>
             </TouchableOpacity>
           ) : null}
-        </View>
+        </DetailCard>
 
         {actionError ? (
           <View style={styles.errorBox}>
@@ -251,11 +241,49 @@ export default function ManagerTicketDetailScreen() {
           </View>
         ) : null}
 
-        <TicketHistoryList
-          history={history}
-          loading={loadingHistory}
-          error={historyError}
-        />
+        <DetailCard title="Description">
+          <Text style={styles.description}>{ticket.description}</Text>
+        </DetailCard>
+
+        <TicketPhotos photos={photos} />
+
+        <DetailCard title="Informations">
+          {ticket.apartment ? (
+            <InfoRow
+              icon="business-outline"
+              label="Résidence"
+              value={ticket.apartment.residence?.name ?? '—'}
+            />
+          ) : null}
+          {ticket.apartment ? (
+            <InfoRow
+              icon="home-outline"
+              label="Logement"
+              value={`${ticket.apartment.unit_number}${
+                ticket.apartment.floor ? ` · étage ${ticket.apartment.floor}` : ''
+              }`}
+            />
+          ) : null}
+          <InfoRow
+            icon="person-outline"
+            label="Déclarant"
+            value={ticket.reporter?.full_name ?? '—'}
+          />
+          <InfoRow
+            icon="calendar-outline"
+            label="Créé le"
+            value={formatDateTime(ticket.created_at)}
+          />
+          {ticket.resolved_at ? (
+            <InfoRow
+              icon="checkmark-circle-outline"
+              label="Résolu le"
+              value={formatDateTime(ticket.resolved_at)}
+            />
+          ) : null}
+        </DetailCard>
+
+        <TicketHistoryList history={history} loading={loadingHistory} error={historyError} />
       </ScrollView>
 
       <Modal visible={pickerOpen} animationType="slide" transparent>
@@ -296,64 +324,21 @@ export default function ManagerTicketDetailScreen() {
   );
 }
 
-function Row({
-  icon,
-  label,
-  value,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  value: string;
-}) {
-  return (
-    <View style={styles.row}>
-      <Ionicons name={icon} size={18} color={colors.textMuted} />
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.rowValue}>{value}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, gap: spacing.lg, paddingBottom: 40 },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.background,
-  },
+  flex: { flex: 1 },
   notFound: { fontSize: fontSize.base, color: colors.textMuted },
-  title: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.extrabold,
-    color: colors.text,
+
+  statusActions: {
+    marginTop: spacing.lg,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
-  badges: { flexDirection: 'row', gap: spacing.sm },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    gap: spacing.md,
-    ...shadow.card,
-  },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  rowLabel: { fontSize: fontSize.md, color: colors.textMuted, width: 90 },
-  rowValue: {
+  actionLabel: {
     fontSize: fontSize.md,
-    color: colors.text,
     fontWeight: fontWeight.semibold,
-    flex: 1,
-  },
-  sectionTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
     color: colors.text,
-  },
-  description: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-    lineHeight: 22,
+    marginBottom: spacing.sm,
   },
   statusRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   statusBtn: {
@@ -364,27 +349,43 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     backgroundColor: colors.surface,
   },
-  statusBtnActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
+  statusBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   statusBtnText: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
     color: colors.textMuted,
   },
   statusBtnTextActive: { color: colors.textOnPrimary },
-  assigned: {
-    fontSize: fontSize.md,
-    color: colors.textMuted,
-    marginBottom: spacing.xs,
+
+  assignRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: spacing.md,
   },
+  assignAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.full,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  assignName: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    color: colors.text,
+  },
+  assignHint: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: 1 },
   unassign: { alignSelf: 'flex-start', paddingVertical: spacing.sm },
   unassignText: {
     fontSize: fontSize.sm,
     color: colors.danger,
     fontWeight: fontWeight.semibold,
   },
+
+  description: { fontSize: fontSize.base, color: colors.text, lineHeight: 23 },
+
   errorBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -394,6 +395,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   errorText: { color: colors.danger, fontSize: fontSize.sm, flex: 1 },
+
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(15, 23, 42, 0.45)',
