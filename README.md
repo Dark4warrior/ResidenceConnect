@@ -197,6 +197,25 @@ Actions) :
 Optionnel : variables de dépôt `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`
 pour injecter la config Supabase au build.
 
+### Build mobile (Expo EAS)
+
+Sur chaque push vers `main`, le workflow
+[`.github/workflows/build-mobile.yml`](.github/workflows/build-mobile.yml)
+déclenche un build Android (profil `preview`, APK) sur les serveurs EAS. Les
+profils de build sont définis dans [`apps/mobile/eas.json`](apps/mobile/eas.json)
+(`development`, `preview`, `production`).
+
+Le job s'auto-ignore tant que le secret n'est pas configuré (main ne casse
+pas). Pour l'activer :
+
+1. `cd apps/mobile && eas init` (crée le projet EAS et renseigne son `projectId`) ;
+2. générer un jeton : `eas whoami` puis un **Access Token** sur expo.dev ;
+3. ajouter le secret GitHub `EXPO_TOKEN` (Settings → Secrets and variables → Actions).
+
+| Secret | Description |
+|--------|-------------|
+| `EXPO_TOKEN` | Jeton d'accès Expo (expo.dev → Account → Access Tokens) |
+
 ## Documentation détaillée
 
 - [docs/architecture.md](docs/architecture.md) — diagrammes C4, choix techniques
