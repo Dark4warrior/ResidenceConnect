@@ -26,6 +26,7 @@ module.exports = {
     '!src/index.ts',
     '!src/types.ts',
   ],
+  coverageReporters: ['text-summary', 'json-summary', 'lcov'],
   coverageThreshold: {
     global: { branches: 70, functions: 70, lines: 70, statements: 70 },
   },

@@ -42,6 +42,10 @@ jobs:
       - name: Tests unitaires + couverture (seuil 70 %)
         run: pnpm test
 
+      - name: Résumé de couverture (visible dans le job)
+        if: always()
+        run: node scripts/coverage-summary.mjs >> "$GITHUB_STEP_SUMMARY"
+
       - name: Archivage des rapports de couverture
         if: always()
         uses: actions/upload-artifact@v4
@@ -49,5 +53,6 @@ jobs:
           name: coverage
           path: |
             apps/mobile/coverage
+            apps/web/coverage
             packages/shared/coverage
           if-no-files-found: ignore
