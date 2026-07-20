@@ -1,5 +1,9 @@
 # ResidenceConnect
 
+[![CI](https://github.com/Dark4warrior/ResidenceConnect/actions/workflows/ci.yml/badge.svg)](https://github.com/Dark4warrior/ResidenceConnect/actions/workflows/ci.yml)
+![Tests](https://img.shields.io/badge/tests-176-brightgreen)
+![Couverture](https://img.shields.io/badge/couverture-%E2%89%A5%2070%25-brightgreen)
+
 Application de gestion des incidents en résidence pour un bailleur social. Un
 locataire signale un problème depuis son téléphone (photo à l'appui), le
 gestionnaire suit les signalements et les attribue à un technicien depuis un
@@ -218,11 +222,32 @@ pnpm type-check   # tsc --noEmit (TypeScript strict)
 pnpm test         # Jest (mobile, shared) + Vitest (web), couverture incluse
 ```
 
-La couverture est mesurée sur le code métier et les hooks (seuil de 70 %
-appliqué automatiquement). La logique pure — scoring de priorité, filtres,
-calcul des indicateurs, export CSV, formatage — est couverte par des tests
-unitaires ; les écrans critiques du web par des tests d'intégration
-(Testing Library).
+La suite compte **176 tests** (Jest côté mobile et `shared`, Vitest côté web) :
+
+- la **logique métier pure** — scoring de priorité, filtres, calcul des
+  indicateurs, export CSV, formatage des dates ;
+- **tous les hooks d'accès aux données** des deux applications (chargement,
+  gestion d'erreur, écriture de l'audit, résilience) ;
+- les **écrans critiques du web** en tests d'intégration (Testing Library) ;
+- un **garde anti-dérive** entre l'algorithme de scoring partagé et sa copie
+  dans l'Edge Function.
+
+La couverture est mesurée sur le code métier et les hooks, avec un seuil de
+70 % appliqué automatiquement (le build échoue en dessous). Les rapports :
+
+| Package | Instructions | Branches | Lignes |
+|---------|-------------|----------|--------|
+| Mobile | 97 % | 83 % | 98 % |
+| Web | 94 % | 88 % | 94 % |
+| Shared | 100 % | 100 % | 100 % |
+
+Comment les consulter :
+
+- `pnpm test` génère un rapport HTML par package dans `apps/*/coverage/` et
+  `packages/shared/coverage/` — ouvrir `coverage/lcov-report/index.html`.
+- Chaque exécution de la CI affiche le tableau de couverture directement sur la
+  page du job (onglet **Actions** du dépôt), sans téléchargement, et archive les
+  rapports complets en artefact.
 
 ### Tests de sécurité RLS
 

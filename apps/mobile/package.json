@@ -57,7 +57,14 @@
     ],
     "collectCoverageFrom": [
       "hooks/**/*.{ts,tsx}",
+      "lib/photos.ts",
+      "lib/secureStorage.ts",
       "!**/*.d.ts"
+    ],
+    "coverageReporters": [
+      "text-summary",
+      "json-summary",
+      "lcov"
     ],
     "coverageThreshold": {
       "global": {
