@@ -1,0 +1,19 @@
+# Configuration minimale ResidenceConnect (Supabase CLI)
+project_id = "residenceconnect"
+
+[api]
+enabled = true
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+
+# Calcul de priorité : appelable sans JWT (clients mobile/web anonymes ou préflight)
+[functions.priority-scoring]
+verify_jwt = false
+
+# Webhook DB → notification + push : JWT requis (Authorization Bearer du webhook)
+[functions.notify-status-change]
+verify_jwt = true
