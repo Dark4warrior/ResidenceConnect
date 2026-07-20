@@ -6,6 +6,20 @@ import {
 import type { TicketRow } from '../types';
 import { formatDateTime } from './format';
 
+/**
+ * Séparateur de colonnes. On utilise le **point-virgule** et non la virgule :
+ * c'est le séparateur attendu par Excel en locale française. Avec une virgule,
+ * Excel FR place toute la ligne dans une seule colonne.
+ */
+export const CSV_SEPARATOR = ';';
+
+/**
+ * Marque d'ordre des octets (BOM) UTF-8. Sans elle, Excel interprète le
+ * fichier en ANSI et casse les accents (« Résolu » → « RÃ©solu »).
+ * À placer en tête du fichier téléchargé.
+ */
+export const UTF8_BOM = '﻿';
+
 // En-têtes du fichier exporté (ordre des colonnes).
 const HEADERS = [
   'Titre',
@@ -23,10 +37,11 @@ const HEADERS = [
 /**
  * Échappe une valeur selon la RFC 4180 : entoure de guillemets si elle
  * contient un séparateur, un guillemet ou un saut de ligne, et double les
- * guillemets internes.
+ * guillemets internes. La virgule est également traitée pour rester
+ * interopérable si le séparateur venait à changer.
  */
 export function escapeCsvValue(value: string): string {
-  if (/[",\n\r]/.test(value)) {
+  if (/[",;\n\r]/.test(value)) {
     return `"${value.replace(/"/g, '""')}"`;
   }
   return value;
@@ -52,8 +67,8 @@ export function ticketsToCsv(tickets: TicketRow[]): string {
       formatDateTime(t.resolved_at),
     ]
       .map((v) => escapeCsvValue(String(v)))
-      .join(',')
+      .join(CSV_SEPARATOR)
   );
 
-  return [HEADERS.join(','), ...rows].join('\n');
+  return [HEADERS.join(CSV_SEPARATOR), ...rows].join('\r\n');
 }
