@@ -1,6 +1,6 @@
 {
+  "_comment": "Ne JAMAIS ignorer node_modules : Metro s'appuie sur l'index watchman pour resoudre les dependances. L'ignorer rend tous les paquets invisibles au bundler.",
   "ignore_dirs": [
-    "node_modules",
     ".git",
     ".expo",
     ".turbo",
