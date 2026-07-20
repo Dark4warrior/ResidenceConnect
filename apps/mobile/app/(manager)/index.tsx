@@ -1,4 +1,3 @@
-import { useMemo, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,55 +5,46 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
-  TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { useState, useCallback, useMemo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import {
-  TICKET_STATUS_LABELS,
-  URGENCY_LEVEL_LABELS,
-  type UrgencyLevel,
-} from '@residenceconnect/shared';
-import { useAuth } from '../../hooks/useAuth';
+import type { TicketStatus } from '@residenceconnect/shared';
 import { useTickets } from '../../hooks/useTickets';
+import { useRealtime } from '../../hooks/useRealtime';
 import { TicketCard } from '../../components/tickets/TicketCard';
-import { Avatar } from '../../components/ui/Avatar';
 import {
-  filterTickets,
-  sortTicketsByPriority,
+  StatusFilterBar,
   type StatusFilter,
-  type UrgencyFilter,
-} from '../../lib/ticketList';
+} from '../../components/tickets/StatusFilterBar';
+import { SegmentedToggle } from '../../components/ui/SegmentedToggle';
 import { colors, spacing, radius, fontSize, fontWeight, shadow } from '../../theme';
 
-const STATUS_FILTERS: { key: StatusFilter; label: string }[] = [
-  { key: 'all', label: 'Tous' },
-  { key: 'pending', label: TICKET_STATUS_LABELS.pending },
-  { key: 'in_progress', label: TICKET_STATUS_LABELS.in_progress },
-  { key: 'resolved', label: TICKET_STATUS_LABELS.resolved },
-];
+/** Les deux intentions du gestionnaire : agir, puis surveiller. */
+type Plan = 'to_assign' | 'assigned';
 
-const URGENCY_FILTERS: { key: UrgencyFilter; label: string }[] = [
-  { key: 'all', label: 'Toutes' },
-  ...(Object.keys(URGENCY_LEVEL_LABELS) as UrgencyLevel[]).map((key) => ({
-    key,
-    label: URGENCY_LEVEL_LABELS[key],
-  })),
-];
+const URGENCY_WEIGHT: Record<string, number> = {
+  critical: 3,
+  high: 2,
+  medium: 1,
+  low: 0,
+};
 
 export default function ManagerDashboardScreen() {
-  const { profile } = useAuth();
   const { tickets, loading, error, refetch } = useTickets();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [urgencyFilter, setUrgencyFilter] = useState<UrgencyFilter>('all');
+  const [plan, setPlan] = useState<Plan>('to_assign');
+  const [status, setStatus] = useState<StatusFilter>('all');
 
   useFocusEffect(
     useCallback(() => {
-      void refetch();
-    }, [refetch]),
+      refetch();
+    }, [refetch])
   );
+
+  useRealtime({ table: 'tickets', onChange: refetch });
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -62,82 +52,127 @@ export default function ManagerDashboardScreen() {
     setRefreshing(false);
   };
 
-  const pendingCount = useMemo(
-    () => tickets.filter((t) => t.status === 'pending').length,
-    [tickets],
+  // Plan 1 : à assigner — un ticket résolu n'attend plus personne, il sort
+  // de la file d'action même s'il n'a jamais été attribué.
+  const toAssign = useMemo(
+    () => tickets.filter((t) => !t.assigned_to && t.status !== 'resolved'),
+    [tickets]
+  );
+  const assigned = useMemo(
+    () => tickets.filter((t) => t.assigned_to || t.status === 'resolved'),
+    [tickets]
   );
 
-  const visibleTickets = useMemo(
+  const source = plan === 'to_assign' ? toAssign : assigned;
+
+  // Compteurs de statut calculés sur le plan courant : les puces reflètent
+  // ce qui est réellement affiché.
+  const counts = useMemo(
     () =>
-      sortTicketsByPriority(filterTickets(tickets, statusFilter, urgencyFilter)),
-    [tickets, statusFilter, urgencyFilter],
+      source.reduce(
+        (acc, t) => {
+          acc[t.status] += 1;
+          return acc;
+        },
+        { pending: 0, in_progress: 0, resolved: 0 } as Record<TicketStatus, number>
+      ),
+    [source]
   );
+
+  const visible = useMemo(() => {
+    const base =
+      status === 'all' ? source : source.filter((t) => t.status === status);
+    return [...base].sort((a, b) => {
+      const byUrgency =
+        (URGENCY_WEIGHT[b.urgency_level] ?? 0) -
+        (URGENCY_WEIGHT[a.urgency_level] ?? 0);
+      if (byUrgency !== 0) return byUrgency;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [source, status]);
+
+  const critical = useMemo(
+    () => toAssign.filter((t) => t.urgency_level === 'critical').length,
+    [toAssign]
+  );
+
+  // Changer de plan remet le filtre de statut à zéro : sinon on peut atterrir
+  // sur une liste vide sans comprendre pourquoi.
+  const changePlan = (next: Plan) => {
+    setPlan(next);
+    setStatus('all');
+  };
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={visibleTickets}
+        data={visible}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         ListHeaderComponent={
-          <View style={styles.headerBlock}>
-            <View style={styles.headerRow}>
-              <Avatar name={profile?.full_name ?? '?'} size={48} />
-              <View style={styles.headerText}>
-                <Text style={styles.hello}>Espace gestionnaire</Text>
-                <Text style={styles.name} numberOfLines={1}>
-                  {profile?.full_name ?? '…'}
+          <View style={styles.header}>
+            {/* Ce qui demande une décision du gestionnaire */}
+            <View style={styles.hero}>
+              <View style={styles.heroIcon}>
+                <Ionicons
+                  name={toAssign.length === 0 ? 'checkmark-done' : 'person-add-outline'}
+                  size={24}
+                  color={toAssign.length === 0 ? colors.success : colors.textOnPrimary}
+                />
+              </View>
+              <View style={styles.flex}>
+                <Text style={styles.heroValue}>
+                  {toAssign.length === 0
+                    ? 'Tout est attribué'
+                    : `${toAssign.length} signalement${toAssign.length > 1 ? 's' : ''} à attribuer`}
+                </Text>
+                <Text style={styles.heroSub}>
+                  {tickets.length} au total · {counts.resolved} résolu
+                  {counts.resolved > 1 ? 's' : ''}
                 </Text>
               </View>
             </View>
 
-            <View style={styles.summary}>
-              <Text style={styles.summaryText}>
-                {tickets.length} signalement{tickets.length === 1 ? '' : 's'}
-                {' · '}
-                {pendingCount} en attente
-              </Text>
-            </View>
+            {critical > 0 && plan === 'to_assign' && (
+              <View style={styles.alert}>
+                <Ionicons name="warning" size={18} color={colors.danger} />
+                <Text style={styles.alertText}>
+                  {critical} signalement{critical > 1 ? 's' : ''} critique
+                  {critical > 1 ? 's' : ''} sans technicien
+                </Text>
+              </View>
+            )}
 
-            <Text style={styles.filterLabel}>Statut</Text>
-            <View style={styles.chipRow}>
-              {STATUS_FILTERS.map((f) => {
-                const active = statusFilter === f.key;
-                return (
-                  <TouchableOpacity
-                    key={f.key}
-                    style={[styles.chip, active && styles.chipActive]}
-                    onPress={() => setStatusFilter(f.key)}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                      {f.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            {/* Deux plans : agir / surveiller */}
+            <SegmentedToggle<Plan>
+              value={plan}
+              onChange={changePlan}
+              options={[
+                {
+                  key: 'to_assign',
+                  label: 'À attribuer',
+                  count: toAssign.length,
+                  icon: 'person-add-outline',
+                },
+                {
+                  key: 'assigned',
+                  label: 'Suivi',
+                  count: assigned.length,
+                  icon: 'pulse-outline',
+                },
+              ]}
+            />
 
-            <Text style={styles.filterLabel}>Urgence</Text>
-            <View style={styles.chipRow}>
-              {URGENCY_FILTERS.map((f) => {
-                const active = urgencyFilter === f.key;
-                return (
-                  <TouchableOpacity
-                    key={f.key}
-                    style={[styles.chip, active && styles.chipActive]}
-                    onPress={() => setUrgencyFilter(f.key)}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                      {f.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            <Text style={styles.sectionTitle}>Signalements</Text>
+            {/* Filtre de statut : pertinent surtout dans le plan « Suivi »,
+                où l'on observe l'évolution des interventions. */}
+            {plan === 'assigned' && (
+              <StatusFilterBar
+                value={status}
+                onChange={setStatus}
+                counts={counts}
+                total={source.length}
+              />
+            )}
           </View>
         }
         renderItem={({ item }) => (
@@ -163,19 +198,37 @@ export default function ManagerDashboardScreen() {
             />
           ) : error ? (
             <View style={styles.empty}>
-              <Ionicons name="alert-circle-outline" size={36} color={colors.danger} />
               <Text style={styles.emptyTitle}>Impossible de charger</Text>
               <Text style={styles.emptyText}>{error}</Text>
             </View>
           ) : (
             <View style={styles.empty}>
               <View style={styles.emptyIcon}>
-                <Ionicons name="documents-outline" size={36} color={colors.textLight} />
+                <Ionicons
+                  name={
+                    plan === 'to_assign' ? 'checkmark-circle-outline' : 'filter-outline'
+                  }
+                  size={36}
+                  color={colors.textLight}
+                />
               </View>
-              <Text style={styles.emptyTitle}>Aucun signalement</Text>
-              <Text style={styles.emptyText}>
-                Aucun ticket ne correspond aux filtres sélectionnés.
+              <Text style={styles.emptyTitle}>
+                {plan === 'to_assign'
+                  ? 'Aucun signalement à attribuer'
+                  : status === 'all'
+                    ? 'Aucun signalement suivi'
+                    : 'Aucun signalement dans ce filtre'}
               </Text>
+              <Text style={styles.emptyText}>
+                {plan === 'to_assign'
+                  ? 'Tous les signalements en cours ont un technicien assigné.'
+                  : 'Les signalements attribués apparaîtront ici avec leur avancement.'}
+              </Text>
+              {plan === 'assigned' && status !== 'all' && (
+                <Pressable onPress={() => setStatus('all')} style={styles.emptyAction}>
+                  <Text style={styles.emptyActionText}>Voir tous</Text>
+                </Pressable>
+              )}
             </View>
           )
         }
@@ -185,108 +238,93 @@ export default function ManagerDashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  list: {
-    padding: spacing.lg,
-    flexGrow: 1,
-  },
-  headerBlock: {
-    marginBottom: spacing.lg,
-    gap: spacing.md,
-  },
-  headerRow: {
+  container: { flex: 1, backgroundColor: colors.background },
+  list: { padding: spacing.lg, flexGrow: 1 },
+  header: { marginBottom: spacing.lg, gap: spacing.md },
+  flex: { flex: 1 },
+
+  hero: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-  },
-  headerText: {
-    flex: 1,
-  },
-  hello: {
-    fontSize: fontSize.md,
-    color: colors.textMuted,
-  },
-  name: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.extrabold,
-    color: colors.text,
-  },
-  summary: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    ...shadow.card,
-  },
-  summaryText: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    color: colors.text,
-  },
-  filterLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
-    color: colors.textMuted,
-    marginTop: spacing.xs,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.full,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  chipActive: {
     backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    ...shadow.brand,
   },
-  chipText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    color: colors.textMuted,
+  heroIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  chipTextActive: {
-    color: colors.textOnPrimary,
-  },
-  sectionTitle: {
+  heroValue: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-    color: colors.text,
-    marginTop: spacing.sm,
+    color: colors.textOnPrimary,
   },
+  heroSub: {
+    fontSize: fontSize.md,
+    color: 'rgba(255,255,255,0.75)',
+    marginTop: 2,
+  },
+
+  alert: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.dangerSoft,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+  },
+  alertText: {
+    flex: 1,
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
+    color: colors.danger,
+  },
+
   empty: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 60,
-    gap: spacing.md,
+    paddingVertical: 72,
+    paddingHorizontal: spacing.xl,
   },
   emptyIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.border,
+    width: 76,
+    height: 76,
+    borderRadius: radius.full,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: spacing.lg,
   },
   emptyTitle: {
-    fontSize: fontSize.lg,
+    fontSize: fontSize.base,
     fontWeight: fontWeight.bold,
-    color: colors.textMuted,
+    color: colors.text,
+    marginBottom: spacing.xs,
+    textAlign: 'center',
   },
   emptyText: {
     fontSize: fontSize.md,
-    color: colors.textLight,
+    color: colors.textMuted,
     textAlign: 'center',
-    paddingHorizontal: 40,
     lineHeight: 20,
+  },
+  emptyAction: {
+    marginTop: spacing.lg,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.full,
+    backgroundColor: colors.primary,
+  },
+  emptyActionText: {
+    color: colors.textOnPrimary,
+    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.md,
   },
 });
