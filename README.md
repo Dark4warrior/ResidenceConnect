@@ -152,6 +152,7 @@ Les migrations SQL sont dans `supabase/migrations/`, à appliquer dans l'ordre :
 | `002_functions.sql` | fonctions RLS `SECURITY DEFINER` + trigger de création de profil |
 | `003_rls_policies.sql` | politiques RLS de chaque table |
 | `004_fix_rls_recursion.sql` | correctif anti-récursion |
+| `005_storage_ticket_photos.sql` | bucket privé `ticket-photos` + RLS Storage |
 
 Application via la CLI Supabase :
 
@@ -177,6 +178,24 @@ Détail des tables, relations et politiques : [docs/database-schema.md](docs/dat
 (`feature/*`, `fix/*`, `test/*`, `docs/*`) et une pull request revue avant
 fusion. Les intégrations sont regroupées sur la branche `develop` ; `main`
 n'est mise à jour que par revue finale.
+
+### Déploiement web (Vercel)
+
+Sur chaque push vers `main`, le workflow
+[`.github/workflows/deploy-web.yml`](.github/workflows/deploy-web.yml) build
+`apps/web` puis le déploie sur Vercel via `amondnet/vercel-action`.
+
+Créer les **secrets** GitHub suivants (Settings → Secrets and variables →
+Actions) :
+
+| Secret | Description |
+|--------|-------------|
+| `VERCEL_TOKEN` | Token d'API Vercel (Account Settings → Tokens) |
+| `VERCEL_ORG_ID` | ID d'organisation / équipe Vercel |
+| `VERCEL_PROJECT_ID` | ID du projet Vercel lié au dashboard |
+
+Optionnel : variables de dépôt `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`
+pour injecter la config Supabase au build.
 
 ## Documentation détaillée
 

@@ -1,0 +1,47 @@
+# Déploiement du dashboard web (`apps/web`) sur Vercel
+# Déclenché uniquement sur push vers `main`.
+name: Deploy Web
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & Deploy Vercel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Installation de pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Installation de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Installation des dépendances
+        run: pnpm install --frozen-lockfile
+
+      - name: Build du dashboard web
+        run: pnpm --filter @residenceconnect/web build
+        env:
+          # Variables publiques Vite (peuvent être vides en build si le bandeau démo suffit)
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Déploiement Vercel (production)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: apps/web
+          vercel-args: '--prod'

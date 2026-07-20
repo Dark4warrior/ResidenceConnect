@@ -9,9 +9,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Image,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import {
   TICKET_CATEGORY_LABELS,
   URGENCY_LEVEL_LABELS,
@@ -22,8 +25,11 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import { useApartments } from '../../hooks/useApartments';
 import { useTickets } from '../../hooks/useTickets';
+import { uploadTicketPhoto } from '../../lib/photos';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+
+const MAX_PHOTOS = 3;
 
 const CATEGORIES = Object.keys(TICKET_CATEGORY_LABELS) as TicketCategory[];
 const URGENCIES = Object.keys(URGENCY_LEVEL_LABELS) as UrgencyLevel[];
@@ -56,9 +62,70 @@ export default function NewTicketScreen() {
   const [apartmentId, setApartmentId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [photoUris, setPhotoUris] = useState<string[]>([]);
 
   const selectedApartment =
     apartmentId ?? (apartments.length === 1 ? apartments[0].id : null);
+
+  const addPhotoUri = (uri: string) => {
+    setPhotoUris((prev) => {
+      if (prev.length >= MAX_PHOTOS) return prev;
+      if (prev.includes(uri)) return prev;
+      return [...prev, uri];
+    });
+  };
+
+  const removePhoto = (uri: string) => {
+    setPhotoUris((prev) => prev.filter((u) => u !== uri));
+  };
+
+  const pickFromCamera = async () => {
+    if (photoUris.length >= MAX_PHOTOS) {
+      setError(`Maximum ${MAX_PHOTOS} photos par signalement.`);
+      return;
+    }
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(
+        'Permission refusée',
+        'L’accès à la caméra est nécessaire pour prendre une photo. Vous pouvez l’activer dans les réglages de l’appareil.',
+      );
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+      allowsEditing: true,
+    });
+    if (!result.canceled && result.assets[0]?.uri) {
+      addPhotoUri(result.assets[0].uri);
+      setError(null);
+    }
+  };
+
+  const pickFromGallery = async () => {
+    if (photoUris.length >= MAX_PHOTOS) {
+      setError(`Maximum ${MAX_PHOTOS} photos par signalement.`);
+      return;
+    }
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(
+        'Permission refusée',
+        'L’accès à la galerie est nécessaire pour choisir une photo. Vous pouvez l’activer dans les réglages de l’appareil.',
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+      allowsMultipleSelection: false,
+    });
+    if (!result.canceled && result.assets[0]?.uri) {
+      addPhotoUri(result.assets[0].uri);
+      setError(null);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!title.trim() || !description.trim()) {
@@ -74,7 +141,7 @@ export default function NewTicketScreen() {
     setSubmitting(true);
     setError(null);
 
-    const { error: createError } = await createTicket({
+    const { id: ticketId, error: createError } = await createTicket({
       apartment_id: selectedApartment,
       reported_by: profile.id,
       title: title.trim(),
@@ -83,17 +150,35 @@ export default function NewTicketScreen() {
       urgency_level: urgency,
     });
 
-    setSubmitting(false);
-
     if (createError) {
+      setSubmitting(false);
       setError(createError.message);
-    } else {
-      setTitle('');
-      setDescription('');
-      setCategory('plumbing');
-      setUrgency('medium');
-      router.replace('/(tenant)');
+      return;
     }
+
+    if (ticketId && photoUris.length > 0) {
+      try {
+        for (const uri of photoUris) {
+          await uploadTicketPhoto(ticketId, uri);
+        }
+      } catch (uploadErr) {
+        setSubmitting(false);
+        const detail =
+          uploadErr instanceof Error ? uploadErr.message : String(uploadErr);
+        setError(
+          `Signalement créé, mais l’envoi des photos a échoué : ${detail}`,
+        );
+        return;
+      }
+    }
+
+    setSubmitting(false);
+    setTitle('');
+    setDescription('');
+    setCategory('plumbing');
+    setUrgency('medium');
+    setPhotoUris([]);
+    router.replace('/(tenant)');
   };
 
   if (loadingApts) {
@@ -243,6 +328,49 @@ export default function NewTicketScreen() {
           />
         </View>
 
+        {/* Photos (facultatif, max 3) */}
+        <View style={styles.section}>
+          <Text style={styles.label}>
+            Photos ({photoUris.length}/{MAX_PHOTOS})
+          </Text>
+          <View style={styles.photoActions}>
+            <TouchableOpacity
+              style={styles.photoBtn}
+              onPress={() => void pickFromCamera()}
+              disabled={photoUris.length >= MAX_PHOTOS || submitting}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="camera-outline" size={20} color="#1e3a5f" />
+              <Text style={styles.photoBtnText}>Prendre une photo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.photoBtn}
+              onPress={() => void pickFromGallery()}
+              disabled={photoUris.length >= MAX_PHOTOS || submitting}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="images-outline" size={20} color="#1e3a5f" />
+              <Text style={styles.photoBtnText}>Choisir dans la galerie</Text>
+            </TouchableOpacity>
+          </View>
+          {photoUris.length > 0 ? (
+            <View style={styles.thumbRow}>
+              {photoUris.map((uri) => (
+                <View key={uri} style={styles.thumbWrap}>
+                  <Image source={{ uri }} style={styles.thumb} />
+                  <TouchableOpacity
+                    style={styles.thumbRemove}
+                    onPress={() => removePhoto(uri)}
+                    hitSlop={8}
+                  >
+                    <Ionicons name="close-circle" size={22} color="#ef4444" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </View>
+
         <Button
           title="Envoyer le signalement"
           onPress={handleSubmit}
@@ -340,6 +468,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#0f172a',
     minHeight: 120,
+  },
+  photoActions: { gap: 10 },
+  photoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#fff',
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  photoBtnText: { fontSize: 14, fontWeight: '600', color: '#1e3a5f' },
+  thumbRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 4 },
+  thumbWrap: { position: 'relative' },
+  thumb: {
+    width: 88,
+    height: 88,
+    borderRadius: 12,
+    backgroundColor: '#e2e8f0',
+  },
+  thumbRemove: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: '#fff',
+    borderRadius: 12,
   },
   submit: { marginTop: 8 },
 });
