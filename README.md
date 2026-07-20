@@ -130,13 +130,20 @@ copiez-collez son contenu dans le **SQL Editor** du tableau de bord Supabase.
 | `004_fix_rls_recursion.sql` | correctif anti-récursion sur `profiles` |
 | `005_storage_ticket_photos.sql` | bucket privé `ticket-photos` + politiques Storage |
 | `006_analytics_rpc.sql` | fonctions d'agrégation analytique (RPC) |
+| `007_status_change_webhook.sql` | trigger appelant l'Edge Function à chaque changement de statut |
 
-Les Edge Functions se déploient à part (voir [docs/api.md](docs/api.md)) :
+Les Edge Functions se déploient **avant** d'appliquer la migration 007 (qui les
+appelle). Voir [docs/api.md](docs/api.md) :
 
 ```bash
 supabase functions deploy priority-scoring
 supabase functions deploy notify-status-change
 ```
+
+> La migration 007 remplace la configuration manuelle d'un « Database Webhook »
+> dans le dashboard : le déclenchement de l'Edge Function sur changement de
+> statut est ainsi versionné dans le dépôt. L'URL et la clé anon (publique) y
+> sont fixées pour ce projet ; les adapter pour une autre instance.
 
 ### 3. Renseigner les variables d'environnement
 
