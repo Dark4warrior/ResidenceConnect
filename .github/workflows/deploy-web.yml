@@ -30,14 +30,26 @@ jobs:
       - name: Installation des dépendances
         run: pnpm install --frozen-lockfile
 
+      # Le build valide toujours que le dashboard compile, secrets ou non.
       - name: Build du dashboard web
         run: pnpm --filter @residenceconnect/web build
         env:
-          # Variables publiques Vite (peuvent être vides en build si le bandeau démo suffit)
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
 
+      # Le déploiement ne s'active que si les secrets Vercel sont configurés :
+      # sans eux, l'étape est ignorée plutôt que d'échouer et de faire passer
+      # `main` au rouge.
+      - name: Vérification des secrets Vercel
+        id: guard
+        run: echo "enabled=${{ secrets.VERCEL_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Information si Vercel non configuré
+        if: steps.guard.outputs.enabled != 'true'
+        run: echo "::notice::Secrets Vercel absents — déploiement ignoré (build validé)."
+
       - name: Déploiement Vercel (production)
+        if: steps.guard.outputs.enabled == 'true'
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
