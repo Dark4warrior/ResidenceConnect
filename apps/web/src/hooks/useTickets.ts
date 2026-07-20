@@ -40,11 +40,20 @@ export function useTickets() {
   }, [fetchTickets]);
 
   /**
-   * Change le statut d'un ticket. Renseigne `resolved_at` quand le ticket
-   * passe à « résolu » et le remet à null sinon.
+   * Change le statut d'un ticket ET journalise le changement dans
+   * `ticket_history`.
+   *
+   * L'audit est écrit ici, au plus près de la mutation, pour qu'aucune page ne
+   * puisse modifier un statut sans laisser de trace. L'auteur provient de la
+   * fonction SQL `current_profile_id()` (SECURITY DEFINER) : il ne peut pas
+   * être falsifié côté client.
+   *
+   * @param comment commentaire facultatif joint à l'entrée d'audit.
    */
   const updateStatus = useCallback(
-    async (ticketId: string, status: TicketStatus) => {
+    async (ticketId: string, status: TicketStatus, comment?: string) => {
+      const previous = tickets.find((t) => t.id === ticketId)?.status ?? null;
+
       const { error: updateError } = await supabase
         .from('tickets')
         .update({
@@ -53,10 +62,30 @@ export function useTickets() {
         })
         .eq('id', ticketId);
 
-      if (!updateError) await fetchTickets();
-      return { error: updateError };
+      if (updateError) return { error: updateError };
+
+      if (previous !== null && previous !== status) {
+        const { data: profileId, error: rpcError } = await supabase.rpc(
+          'current_profile_id'
+        );
+        if (rpcError) return { error: rpcError };
+
+        const { error: historyError } = await supabase
+          .from('ticket_history')
+          .insert({
+            ticket_id: ticketId,
+            changed_by: profileId as string,
+            old_status: previous,
+            new_status: status,
+            comment: comment ?? null,
+          });
+        if (historyError) return { error: historyError };
+      }
+
+      await fetchTickets();
+      return { error: null };
     },
-    [fetchTickets]
+    [tickets, fetchTickets]
   );
 
   /** Assigne (ou désassigne avec null) un technicien à un ticket. */

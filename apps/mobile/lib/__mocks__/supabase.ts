@@ -9,6 +9,7 @@
  */
 export const supabase = {
   from: jest.fn(),
+  rpc: jest.fn(),
   channel: jest.fn(),
   removeChannel: jest.fn(),
   auth: {
