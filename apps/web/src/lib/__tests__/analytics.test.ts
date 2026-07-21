@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeKpis } from '../analytics';
+import { computeKpis, weeklyResolutionRate } from '../analytics';
 import { makeTicket } from '../../test/fixtures';
 
 describe('computeKpis', () => {
@@ -67,5 +67,46 @@ describe('computeKpis', () => {
     ]);
     expect(kpis.avgResolutionHours).toBeNull();
     expect(kpis.resolutionRate).toBe(100);
+  });
+});
+
+describe('weeklyResolutionRate', () => {
+  const NOW = new Date('2026-07-20T12:00:00Z').getTime();
+  const daysAgo = (n: number) =>
+    new Date(NOW - n * 24 * 60 * 60 * 1000).toISOString();
+
+  it('renvoie null sans ticket dans la fenêtre', () => {
+    const r = weeklyResolutionRate(
+      [makeTicket({ created_at: daysAgo(30) })],
+      NOW
+    );
+    expect(r.rate).toBeNull();
+    expect(r.count).toBe(0);
+  });
+
+  it('ne compte que les tickets créés dans les 7 derniers jours', () => {
+    const r = weeklyResolutionRate(
+      [
+        makeTicket({ status: 'resolved', created_at: daysAgo(1) }),
+        makeTicket({ status: 'pending', created_at: daysAgo(3) }),
+        makeTicket({ status: 'resolved', created_at: daysAgo(20) }), // hors fenêtre
+      ],
+      NOW
+    );
+    expect(r.count).toBe(2);
+    expect(r.rate).toBe(50);
+  });
+
+  it('respecte une fenêtre personnalisée', () => {
+    const r = weeklyResolutionRate(
+      [
+        makeTicket({ status: 'resolved', created_at: daysAgo(10) }),
+        makeTicket({ status: 'pending', created_at: daysAgo(40) }),
+      ],
+      NOW,
+      30
+    );
+    expect(r.count).toBe(1);
+    expect(r.rate).toBe(100);
   });
 });

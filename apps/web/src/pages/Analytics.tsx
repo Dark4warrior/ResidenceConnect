@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   TICKET_STATUS_LABELS,
   TICKET_CATEGORY_LABELS,
@@ -6,6 +7,7 @@ import {
 } from '@residenceconnect/shared';
 import { useTickets } from '../hooks/useTickets';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { weeklyResolutionRate } from '../lib/analytics';
 import { formatDuration } from '../lib/format';
 import { StatCard } from '../components/StatCard';
 
@@ -13,6 +15,10 @@ import { StatCard } from '../components/StatCard';
 export function Analytics() {
   const { tickets, loading, error } = useTickets();
   const { kpis, breakdown, source } = useAnalytics(tickets);
+
+  // Taux de résolution sur les 7 derniers jours plutôt que sur tout
+  // l'historique : plus représentatif de l'activité récente.
+  const weekly = useMemo(() => weeklyResolutionRate(tickets), [tickets]);
 
   if (loading) return <p className="text-sm text-slate-400">Chargement…</p>;
   if (error)
@@ -38,7 +44,15 @@ export function Analytics() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Tickets au total" value={kpis.total} />
-        <StatCard label="Taux de résolution" value={`${kpis.resolutionRate} %`} />
+        <StatCard
+          label="Taux de résolution (7 j)"
+          value={weekly.rate === null ? '—' : `${weekly.rate} %`}
+          hint={
+            weekly.count === 0
+              ? 'Aucun signalement cette semaine'
+              : `${weekly.count} signalement${weekly.count > 1 ? 's' : ''} créé${weekly.count > 1 ? 's' : ''} sur 7 jours`
+          }
+        />
         <StatCard
           label="Délai moyen de résolution"
           value={formatDuration(kpis.avgResolutionHours)}

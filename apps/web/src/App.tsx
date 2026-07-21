@@ -6,6 +6,7 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { TicketDetail } from './pages/TicketDetail';
 import { Analytics } from './pages/Analytics';
+import { Profile } from './pages/Profile';
 import { NotFound } from './pages/NotFound';
 
 /** Point d'entrée applicatif : contexte d'auth + routage. */
@@ -20,6 +21,7 @@ export default function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/tickets/:id" element={<TicketDetail />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/profil" element={<Profile />} />
             </Route>
           </Route>
           <Route path="*" element={<NotFound />} />

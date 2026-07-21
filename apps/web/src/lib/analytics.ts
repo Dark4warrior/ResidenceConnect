@@ -98,3 +98,32 @@ export function computeKpis(tickets: TicketRow[]): TicketKpis {
     topCategory,
   };
 }
+
+export interface WeeklyResolution {
+  /** Taux de résolution en % sur la fenêtre, ou null si aucun ticket. */
+  rate: number | null;
+  /** Nombre de tickets créés dans la fenêtre. */
+  count: number;
+}
+
+/**
+ * Taux de résolution sur une fenêtre glissante (7 jours par défaut) : parmi les
+ * tickets créés dans la fenêtre, la proportion déjà résolue. Plus
+ * représentatif de l'activité récente qu'un taux calculé sur tout l'historique.
+ *
+ * Fonction pure ; `now` est injectable pour la testabilité.
+ */
+export function weeklyResolutionRate(
+  tickets: TicketRow[],
+  now: number = Date.now(),
+  windowDays = 7
+): WeeklyResolution {
+  const since = now - windowDays * 24 * 60 * 60 * 1000;
+  const recent = tickets.filter((t) => {
+    const created = new Date(t.created_at).getTime();
+    return !Number.isNaN(created) && created >= since;
+  });
+  if (recent.length === 0) return { rate: null, count: 0 };
+  const resolved = recent.filter((t) => t.status === 'resolved').length;
+  return { rate: Math.round((resolved / recent.length) * 100), count: recent.length };
+}

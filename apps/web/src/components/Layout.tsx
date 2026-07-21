@@ -2,10 +2,14 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../context/AuthContext';
 import { ConfigBanner } from './ConfigBanner';
 
-const linkClass = ({ isActive }: { isActive: boolean }) =>
+// Onglets de navigation : visibles comme des onglets même au repos (bordure +
+// fond), pas seulement au survol.
+const tabClass = ({ isActive }: { isActive: boolean }) =>
   [
-    'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-    isActive ? 'bg-brand text-white' : 'text-slate-600 hover:bg-slate-100',
+    'rounded-lg border px-3.5 py-2 text-sm font-medium transition-colors',
+    isActive
+      ? 'border-brand bg-brand text-white'
+      : 'border-slate-200 bg-white text-slate-600 hover:border-brand hover:text-brand',
   ].join(' ');
 
 /** Cadre commun du dashboard : en-tête, navigation et zone de contenu. */
@@ -24,22 +28,40 @@ export function Layout() {
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
           <span className="text-lg font-bold text-brand">ResidenceConnect</span>
-          <nav className="flex items-center gap-1">
-            <NavLink to="/" end className={linkClass}>
+          <nav className="flex items-center gap-2">
+            <NavLink to="/" end className={tabClass}>
               Tickets
             </NavLink>
-            <NavLink to="/analytics" className={linkClass}>
+            <NavLink to="/analytics" className={tabClass}>
               Analytics
             </NavLink>
           </nav>
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2">
             {profile ? (
-              <span className="text-sm text-slate-500">{profile.full_name}</span>
+              <NavLink
+                to="/profil"
+                className={({ isActive }) =>
+                  [
+                    'flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'border-brand bg-brand-light text-brand'
+                      : 'border-slate-200 text-slate-600 hover:border-brand hover:text-brand',
+                  ].join(' ')
+                }
+              >
+                <span
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-brand text-xs font-bold text-white"
+                  aria-hidden="true"
+                >
+                  {profile.full_name.charAt(0).toUpperCase()}
+                </span>
+                {profile.full_name}
+              </NavLink>
             ) : null}
             <button
               type="button"
               onClick={handleSignOut}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
             >
               Déconnexion
             </button>
