@@ -62,14 +62,21 @@ export default function LoginScreen() {
           <Text style={styles.cardTitle}>Connexion</Text>
 
           {error && (
-            <View style={styles.errorBox}>
-              <Ionicons name="alert-circle" size={18} color="#ef4444" />
+            <View style={styles.errorBox} accessibilityLiveRegion="assertive">
+              <Ionicons
+                name="alert-circle"
+                size={18}
+                color="#ef4444"
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
 
           <Input
             icon="mail-outline"
+            accessibilityLabel="Adresse email"
             placeholder="Adresse email"
             value={email}
             onChangeText={setEmail}
@@ -80,6 +87,7 @@ export default function LoginScreen() {
 
           <Input
             icon="lock-closed-outline"
+            accessibilityLabel="Mot de passe"
             placeholder="Mot de passe"
             value={password}
             onChangeText={setPassword}
