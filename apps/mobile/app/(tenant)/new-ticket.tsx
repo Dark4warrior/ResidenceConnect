@@ -28,6 +28,7 @@ import { useTickets } from '../../hooks/useTickets';
 import { uploadTicketPhoto } from '../../lib/photos';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { colors } from '../../theme';
 
 const MAX_PHOTOS = 3;
 
@@ -213,8 +214,14 @@ export default function NewTicketScreen() {
         showsVerticalScrollIndicator={false}
       >
         {error && (
-          <View style={styles.errorBox}>
-            <Ionicons name="alert-circle" size={18} color="#ef4444" />
+          <View style={styles.errorBox} accessibilityLiveRegion="assertive">
+            <Ionicons
+              name="alert-circle"
+              size={18}
+              color="#ef4444"
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
@@ -230,12 +237,21 @@ export default function NewTicketScreen() {
                   key={apt.id}
                   style={[styles.aptRow, active && styles.aptRowActive]}
                   onPress={() => setApartmentId(apt.id)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`${apt.residence?.name} · Logement ${apt.unit_number}`}
                 >
                   <Text style={styles.aptText}>
                     {apt.residence?.name} · Logement {apt.unit_number}
                   </Text>
                   {active && (
-                    <Ionicons name="checkmark-circle" size={20} color="#1e3a5f" />
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={20}
+                      color="#1e3a5f"
+                      accessibilityElementsHidden
+                      importantForAccessibility="no"
+                    />
                   )}
                 </TouchableOpacity>
               );
@@ -255,11 +271,16 @@ export default function NewTicketScreen() {
                   style={[styles.catCard, active && styles.catCardActive]}
                   onPress={() => setCategory(cat)}
                   activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`Catégorie ${TICKET_CATEGORY_LABELS[cat]}`}
                 >
                   <Ionicons
                     name={CATEGORY_ICONS[cat]}
                     size={22}
                     color={active ? '#fff' : '#64748b'}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                   />
                   <Text style={[styles.catText, active && styles.catTextActive]}>
                     {TICKET_CATEGORY_LABELS[cat]}
@@ -286,6 +307,9 @@ export default function NewTicketScreen() {
                   ]}
                   onPress={() => setUrgency(u)}
                   activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`Urgence ${URGENCY_LEVEL_LABELS[u]}`}
                 >
                   <Text
                     style={[
@@ -318,9 +342,10 @@ export default function NewTicketScreen() {
           <TextInput
             style={styles.textarea}
             placeholder="Décrivez le problème en détail…"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={colors.textLight}
             value={description}
             onChangeText={setDescription}
+            accessibilityLabel="Description du problème"
             multiline
             numberOfLines={5}
             textAlignVertical="top"
@@ -339,8 +364,17 @@ export default function NewTicketScreen() {
               onPress={() => void pickFromCamera()}
               disabled={photoUris.length >= MAX_PHOTOS || submitting}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Prendre une photo"
+              accessibilityState={{ disabled: photoUris.length >= MAX_PHOTOS || submitting }}
             >
-              <Ionicons name="camera-outline" size={20} color="#1e3a5f" />
+              <Ionicons
+                name="camera-outline"
+                size={20}
+                color="#1e3a5f"
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
               <Text style={styles.photoBtnText}>Prendre une photo</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -348,20 +382,37 @@ export default function NewTicketScreen() {
               onPress={() => void pickFromGallery()}
               disabled={photoUris.length >= MAX_PHOTOS || submitting}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Choisir une photo dans la galerie"
+              accessibilityState={{ disabled: photoUris.length >= MAX_PHOTOS || submitting }}
             >
-              <Ionicons name="images-outline" size={20} color="#1e3a5f" />
+              <Ionicons
+                name="images-outline"
+                size={20}
+                color="#1e3a5f"
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
               <Text style={styles.photoBtnText}>Choisir dans la galerie</Text>
             </TouchableOpacity>
           </View>
           {photoUris.length > 0 ? (
             <View style={styles.thumbRow}>
-              {photoUris.map((uri) => (
+              {photoUris.map((uri, index) => (
                 <View key={uri} style={styles.thumbWrap}>
-                  <Image source={{ uri }} style={styles.thumb} />
+                  <Image
+                    source={{ uri }}
+                    style={styles.thumb}
+                    accessible
+                    accessibilityRole="image"
+                    accessibilityLabel={`Photo ${index + 1} jointe au signalement`}
+                  />
                   <TouchableOpacity
                     style={styles.thumbRemove}
                     onPress={() => removePhoto(uri)}
-                    hitSlop={8}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Supprimer la photo ${index + 1}`}
                   >
                     <Ionicons name="close-circle" size={22} color="#ef4444" />
                   </TouchableOpacity>
