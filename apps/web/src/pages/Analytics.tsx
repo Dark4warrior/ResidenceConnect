@@ -20,7 +20,7 @@ export function Analytics() {
   // l'historique : plus représentatif de l'activité récente.
   const weekly = useMemo(() => weeklyResolutionRate(tickets), [tickets]);
 
-  if (loading) return <p className="text-sm text-slate-400">Chargement…</p>;
+  if (loading) return <p className="text-sm text-slate-500">Chargement…</p>;
   if (error)
     return (
       <p className="rounded-lg bg-red-50 p-4 text-sm text-red-700">{error}</p>
@@ -85,17 +85,21 @@ export function Analytics() {
 
       {source === 'sql' && breakdown.length > 0 ? (
         <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-sm font-semibold text-slate-700">
+          <h2 className="text-sm font-semibold text-slate-700">
             Récurrence et délai par catégorie
-          </p>
+          </h2>
           <div className="mt-4 overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-wide text-slate-400">
+              <caption className="sr-only">
+                Nombre de signalements, de résolutions et délai moyen de
+                résolution, par catégorie.
+              </caption>
+              <thead className="text-left text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="pb-2 font-semibold">Catégorie</th>
-                  <th className="pb-2 text-right font-semibold">Signalements</th>
-                  <th className="pb-2 text-right font-semibold">Résolus</th>
-                  <th className="pb-2 text-right font-semibold">Délai moyen</th>
+                  <th scope="col" className="pb-2 font-semibold">Catégorie</th>
+                  <th scope="col" className="pb-2 text-right font-semibold">Signalements</th>
+                  <th scope="col" className="pb-2 text-right font-semibold">Résolus</th>
+                  <th scope="col" className="pb-2 text-right font-semibold">Délai moyen</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -137,7 +141,7 @@ interface DistributionProps {
 function Distribution({ title, entries, total }: DistributionProps) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5">
-      <p className="text-sm font-semibold text-slate-700">{title}</p>
+      <h2 className="text-sm font-semibold text-slate-700">{title}</h2>
       <ul className="mt-4 space-y-3">
         {entries.map((e) => {
           const pct = total > 0 ? Math.round((e.count / total) * 100) : 0;
