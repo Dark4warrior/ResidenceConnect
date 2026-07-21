@@ -30,7 +30,7 @@ export function Login() {
   return (
     <div className="min-h-screen">
       <ConfigBanner />
-      <div className="flex min-h-[80vh] items-center justify-center px-4">
+      <main className="flex min-h-[80vh] items-center justify-center px-4">
         <form
           onSubmit={handleSubmit}
           className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"
@@ -82,7 +82,7 @@ export function Login() {
             </p>
           ) : null}
         </form>
-      </div>
+      </main>
     </div>
   );
 }

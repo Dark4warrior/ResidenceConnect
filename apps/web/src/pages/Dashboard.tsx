@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { TICKET_CATEGORY_LABELS } from '@residenceconnect/shared';
 import { useTickets } from '../hooks/useTickets';
 import { filterTickets, sortByUrgencyThenDate } from '../lib/filters';
@@ -144,14 +144,31 @@ export function Dashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {visible.map((t) => (
+                {visible.map((t) => {
+                  const location = t.apartment
+                    ? `${t.apartment.residence?.name ?? 'résidence inconnue'}, logement ${t.apartment.unit_number}`
+                    : 'logement non renseigné';
+                  return (
+                  // La ligne reste une vraie ligne de tableau (sémantique
+                  // préservée) ; le clic sur la ligne est un confort souris,
+                  // tandis que l'ouverture au clavier / lecteur d'écran passe
+                  // par le vrai lien de la cellule « Titre ».
                   <tr
                     key={t.id}
                     onClick={() => navigate(`/tickets/${t.id}`)}
-                    className="cursor-pointer transition-colors hover:bg-brand-light/40"
+                    className="cursor-pointer transition-colors hover:bg-brand-light/40 focus-within:bg-brand-light/40"
                   >
                     <td className="px-4 py-3">
-                      <span className="font-medium text-brand">{t.title}</span>
+                      <Link
+                        to={`/tickets/${t.id}`}
+                        // Évite la double navigation : le clic sur le lien ne
+                        // doit pas aussi déclencher le onClick de la ligne.
+                        onClick={(e) => e.stopPropagation()}
+                        aria-label={`Ouvrir le signalement : ${t.title}, ${location}, créé le ${formatDate(t.created_at)}`}
+                        className="rounded font-medium text-brand focus:outline-none focus:ring-2 focus:ring-brand"
+                      >
+                        {t.title}
+                      </Link>
                       <span className="block text-xs text-slate-400">
                         {TICKET_CATEGORY_LABELS[t.category]}
                       </span>
@@ -183,7 +200,8 @@ export function Dashboard() {
                       ›
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
