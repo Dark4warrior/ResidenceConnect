@@ -228,9 +228,19 @@ export default function TenantTicketDetailScreen() {
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.photoRow}>
-                {photos.map((p) => (
-                  <Pressable key={p.id} onPress={() => setFullscreenUri(p.uri)}>
-                    <Image source={{ uri: p.uri }} style={styles.photo} />
+                {photos.map((p, index) => (
+                  <Pressable
+                    key={p.id}
+                    onPress={() => setFullscreenUri(p.uri)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Agrandir la photo ${index + 1} sur ${photos.length}`}
+                  >
+                    <Image
+                      source={{ uri: p.uri }}
+                      style={styles.photo}
+                      accessibilityElementsHidden
+                      importantForAccessibility="no"
+                    />
                   </Pressable>
                 ))}
               </View>
@@ -291,6 +301,9 @@ export default function TenantTicketDetailScreen() {
               source={{ uri: fullscreenUri }}
               style={styles.fullscreenImage}
               resizeMode="contain"
+              accessible
+              accessibilityRole="image"
+              accessibilityLabel="Photo du signalement en plein écran"
             />
           )}
         </Pressable>

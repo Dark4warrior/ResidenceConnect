@@ -162,11 +162,16 @@ export default function RegisterScreen() {
                   style={[styles.roleCard, active && styles.roleCardActive]}
                   onPress={() => setRole(r.value)}
                   activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`Rôle ${r.label}`}
                 >
                   <Ionicons
                     name={r.icon}
                     size={22}
                     color={active ? '#fff' : '#64748b'}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                   />
                   <Text
                     style={[styles.roleText, active && styles.roleTextActive]}

@@ -6,6 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
   TouchableOpacity,
+  AccessibilityInfo,
 } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -112,6 +113,9 @@ export default function TechnicianTicketDetailScreen() {
       setActionError(errorMessage(error, 'Échec de la mise à jour du statut.'));
       return;
     }
+    AccessibilityInfo.announceForAccessibility(
+      `Statut mis à jour : ${TICKET_STATUS_LABELS[status]}`,
+    );
     setComment('');
     await Promise.all([loadTicket(), refetch(), refetchHistory()]);
   };
@@ -169,6 +173,9 @@ export default function TechnicianTicketDetailScreen() {
                   disabled={saving || active}
                   onPress={() => void handleStatus(s)}
                   activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active, disabled: saving || active }}
+                  accessibilityLabel={`Passer le statut à ${TICKET_STATUS_LABELS[s]}`}
                 >
                   <Text
                     style={[styles.statusBtnText, active && styles.statusBtnTextActive]}
@@ -183,8 +190,14 @@ export default function TechnicianTicketDetailScreen() {
             <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.sm }} />
           ) : null}
           {actionError ? (
-            <View style={styles.errorBox}>
-              <Ionicons name="alert-circle" size={18} color={colors.danger} />
+            <View style={styles.errorBox} accessibilityLiveRegion="assertive">
+              <Ionicons
+                name="alert-circle"
+                size={18}
+                color={colors.danger}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
               <Text style={styles.errorText}>{actionError}</Text>
             </View>
           ) : null}

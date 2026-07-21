@@ -30,14 +30,19 @@ export function TicketPhotos({ photos }: TicketPhotosProps) {
       <Text style={styles.title}>Photos ({photos.length})</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.row}>
-          {photos.map((p) => (
+          {photos.map((p, index) => (
             <Pressable
               key={p.id}
               onPress={() => setFullscreen(p.uri)}
               accessibilityRole="imagebutton"
-              accessibilityLabel="Agrandir la photo"
+              accessibilityLabel={`Agrandir la photo ${index + 1} sur ${photos.length}`}
             >
-              <Image source={{ uri: p.uri }} style={styles.thumb} />
+              <Image
+                source={{ uri: p.uri }}
+                style={styles.thumb}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
             </Pressable>
           ))}
         </View>
@@ -58,6 +63,9 @@ export function TicketPhotos({ photos }: TicketPhotosProps) {
               source={{ uri: fullscreen }}
               style={styles.fullImage}
               resizeMode="contain"
+              accessible
+              accessibilityRole="image"
+              accessibilityLabel="Photo du signalement en plein écran"
             />
           )}
         </Pressable>
