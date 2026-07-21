@@ -133,17 +133,9 @@ export default function ManagerDashboardScreen() {
               </View>
             </View>
 
-            {critical > 0 && plan === 'to_assign' && (
-              <View style={styles.alert}>
-                <Ionicons name="warning" size={18} color={colors.danger} />
-                <Text style={styles.alertText}>
-                  {critical} signalement{critical > 1 ? 's' : ''} critique
-                  {critical > 1 ? 's' : ''} sans technicien
-                </Text>
-              </View>
-            )}
-
-            {/* Deux plans : agir / surveiller */}
+            {/* Interrupteur en premier : sa position reste stable quel que
+                soit le plan (l'alerte est placée EN DESSOUS pour ne pas le
+                faire sauter au changement). */}
             <SegmentedToggle<Plan>
               value={plan}
               onChange={changePlan}
@@ -162,6 +154,16 @@ export default function ManagerDashboardScreen() {
                 },
               ]}
             />
+
+            {critical > 0 && plan === 'to_assign' && (
+              <View style={styles.alert}>
+                <Ionicons name="warning" size={18} color={colors.danger} />
+                <Text style={styles.alertText}>
+                  {critical} signalement{critical > 1 ? 's' : ''} critique
+                  {critical > 1 ? 's' : ''} sans technicien
+                </Text>
+              </View>
+            )}
 
             {/* Filtre de statut : pertinent surtout dans le plan « Suivi »,
                 où l'on observe l'évolution des interventions. */}

@@ -122,14 +122,6 @@ export default function ManagerProfileScreen() {
         />
       </Section>
 
-      <Section title="Bon à savoir">
-        <Text style={s.helpText}>
-          Les signalements critiques sans technicien assigné sont mis en avant
-          sur votre tableau de bord. Chaque changement de statut est enregistré
-          dans le journal d&apos;intervention et notifié au locataire.
-        </Text>
-      </Section>
-
       <View>
         <LogoutButton onConfirm={() => void signOut()} />
         <AppVersion />

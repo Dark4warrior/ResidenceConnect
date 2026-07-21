@@ -118,14 +118,6 @@ export default function TechnicianProfileScreen() {
         />
       </Section>
 
-      <Section title="Rappel">
-        <Text style={s.helpText}>
-          Pensez à mettre à jour le statut de vos missions depuis le terrain :
-          le locataire et le gestionnaire sont informés en temps réel. Un
-          commentaire à la clôture alimente le journal d&apos;intervention.
-        </Text>
-      </Section>
-
       <View>
         <LogoutButton onConfirm={() => void signOut()} />
         <AppVersion />
