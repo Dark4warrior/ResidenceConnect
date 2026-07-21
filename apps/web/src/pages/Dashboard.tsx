@@ -120,27 +120,33 @@ export function Dashboard() {
           Impossible de charger les tickets : {error}
         </p>
       ) : loading ? (
-        <p className="text-sm text-slate-400">Chargement des tickets…</p>
+        <p className="text-sm text-slate-500">Chargement des tickets…</p>
       ) : visible.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400">
+        <p className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
           Aucun ticket à afficher.
         </p>
       ) : (
         <>
-          <p className="mb-2 text-xs text-slate-400">
+          <p className="mb-2 text-xs text-slate-500">
             Cliquez sur une ligne pour ouvrir le détail et attribuer un technicien.
           </p>
           <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
             <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <caption className="sr-only">
+                Liste des signalements. Activez le titre d'une ligne pour en
+                ouvrir le détail.
+              </caption>
               <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">Titre</th>
-                  <th className="px-4 py-3 font-semibold">Logement</th>
-                  <th className="px-4 py-3 font-semibold">Urgence</th>
-                  <th className="px-4 py-3 font-semibold">Statut</th>
-                  <th className="px-4 py-3 font-semibold">Assigné à</th>
-                  <th className="px-4 py-3 font-semibold">Créé le</th>
-                  <th className="px-4 py-3" />
+                  <th scope="col" className="px-4 py-3 font-semibold">Titre</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Logement</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Urgence</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Statut</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Assigné à</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Créé le</th>
+                  <th scope="col" className="px-4 py-3">
+                    <span className="sr-only">Ouvrir</span>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -169,7 +175,7 @@ export function Dashboard() {
                       >
                         {t.title}
                       </Link>
-                      <span className="block text-xs text-slate-400">
+                      <span className="block text-xs text-slate-500">
                         {TICKET_CATEGORY_LABELS[t.category]}
                       </span>
                     </td>
@@ -188,7 +194,7 @@ export function Dashboard() {
                       {t.assignee ? (
                         <span className="text-slate-700">{t.assignee.full_name}</span>
                       ) : t.status === 'resolved' ? (
-                        <span className="text-slate-400">—</span>
+                        <span className="text-slate-500">—</span>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-200">
                           Non assigné

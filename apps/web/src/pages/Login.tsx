@@ -77,7 +77,7 @@ export function Login() {
           </button>
 
           {!isSupabaseConfigured ? (
-            <p className="mt-3 text-center text-xs text-slate-400">
+            <p className="mt-3 text-center text-xs text-slate-500">
               Connexion désactivée en mode démonstration.
             </p>
           ) : null}
