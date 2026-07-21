@@ -20,17 +20,20 @@ import { computeKpis, formatDuration } from '../../lib/analytics';
 import { CategoryDonut } from '../../components/analytics/CategoryDonut';
 import { colors, spacing, radius, fontSize, fontWeight, shadow } from '../../theme';
 
+// Palette volontairement sobre (app professionnelle) : les barres sont
+// monochromes (couleur de marque), l'intensité varie légèrement selon la
+// gravité plutôt que d'empiler des couleurs vives.
 const STATUS_TONE: Record<TicketStatus, string> = {
-  pending: colors.warning,
-  in_progress: colors.accent,
-  resolved: colors.success,
+  pending: colors.primaryLight,
+  in_progress: colors.primary,
+  resolved: colors.primaryDark,
 };
 
 const URGENCY_TONE: Record<UrgencyLevel, string> = {
-  low: colors.success,
-  medium: colors.warning,
-  high: '#F97316',
-  critical: colors.danger,
+  low: colors.primaryLight,
+  medium: colors.primary,
+  high: colors.primary,
+  critical: colors.primaryDark,
 };
 
 export default function ManagerAnalyticsScreen() {
@@ -97,13 +100,13 @@ export default function ManagerAnalyticsScreen() {
           icon="timer-outline"
           value={formatDuration(kpis.avgResolutionHours)}
           label="Délai moyen"
-          tone={colors.accent}
+          tone={colors.primary}
         />
         <Kpi
           icon="folder-open-outline"
           value={String(open)}
           label="En cours"
-          tone={colors.warning}
+          tone={colors.textMuted}
         />
         <Kpi
           icon="alert-circle-outline"

@@ -4,6 +4,7 @@ import {
   URGENCY_LEVEL_LABELS,
 } from '@residenceconnect/shared';
 import type { TicketFilters } from '../types';
+import { Select, type SelectOption } from './Select';
 
 interface FilterBarProps {
   filters: TicketFilters;
@@ -11,8 +12,19 @@ interface FilterBarProps {
   resultCount: number;
 }
 
-const selectClass =
-  'rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand';
+/** Construit les options d'un filtre avec une entrée « tout » en tête. */
+function withAll<T extends string>(
+  allLabel: string,
+  labels: Record<string, string>
+): SelectOption<T | 'all'>[] {
+  return [
+    { value: 'all', label: allLabel },
+    ...Object.entries(labels).map(([value, label]) => ({
+      value: value as T,
+      label,
+    })),
+  ];
+}
 
 /** Barre de filtres du tableau de tickets (statut, urgence, catégorie, recherche). */
 export function FilterBar({ filters, onChange, resultCount }: FilterBarProps) {
@@ -24,56 +36,29 @@ export function FilterBar({ filters, onChange, resultCount }: FilterBarProps) {
         placeholder="Rechercher (titre, logement…)"
         value={filters.search}
         onChange={(e) => onChange({ ...filters, search: e.target.value })}
-        className={`${selectClass} min-w-56 flex-1`}
+        className="min-w-56 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm transition-colors hover:border-brand focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
       />
 
-      <select
-        aria-label="Filtrer par statut"
+      <Select
+        ariaLabel="Filtrer par statut"
         value={filters.status}
-        onChange={(e) =>
-          onChange({ ...filters, status: e.target.value as TicketFilters['status'] })
-        }
-        className={selectClass}
-      >
-        <option value="all">Tous les statuts</option>
-        {Object.entries(TICKET_STATUS_LABELS).map(([k, label]) => (
-          <option key={k} value={k}>
-            {label}
-          </option>
-        ))}
-      </select>
+        options={withAll<TicketFilters['status']>('Tous les statuts', TICKET_STATUS_LABELS)}
+        onChange={(status) => onChange({ ...filters, status })}
+      />
 
-      <select
-        aria-label="Filtrer par urgence"
+      <Select
+        ariaLabel="Filtrer par urgence"
         value={filters.urgency}
-        onChange={(e) =>
-          onChange({ ...filters, urgency: e.target.value as TicketFilters['urgency'] })
-        }
-        className={selectClass}
-      >
-        <option value="all">Toutes urgences</option>
-        {Object.entries(URGENCY_LEVEL_LABELS).map(([k, label]) => (
-          <option key={k} value={k}>
-            {label}
-          </option>
-        ))}
-      </select>
+        options={withAll<TicketFilters['urgency']>('Toutes urgences', URGENCY_LEVEL_LABELS)}
+        onChange={(urgency) => onChange({ ...filters, urgency })}
+      />
 
-      <select
-        aria-label="Filtrer par catégorie"
+      <Select
+        ariaLabel="Filtrer par catégorie"
         value={filters.category}
-        onChange={(e) =>
-          onChange({ ...filters, category: e.target.value as TicketFilters['category'] })
-        }
-        className={selectClass}
-      >
-        <option value="all">Toutes catégories</option>
-        {Object.entries(TICKET_CATEGORY_LABELS).map(([k, label]) => (
-          <option key={k} value={k}>
-            {label}
-          </option>
-        ))}
-      </select>
+        options={withAll<TicketFilters['category']>('Toutes catégories', TICKET_CATEGORY_LABELS)}
+        onChange={(category) => onChange({ ...filters, category })}
+      />
 
       <span className="ml-auto text-sm text-slate-500">
         {resultCount} ticket{resultCount > 1 ? 's' : ''}

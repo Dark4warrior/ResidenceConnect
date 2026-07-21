@@ -65,5 +65,30 @@ export function useAuth() {
     await supabase.auth.signOut();
   }, []);
 
-  return { ...state, signIn, signOut };
+  /**
+   * Met à jour les informations personnelles du profil connecté (nom,
+   * téléphone) et rafraîchit l'état. La politique RLS `profiles_update_own`
+   * garantit qu'on ne peut modifier que son propre profil.
+   */
+  const updateProfile = useCallback(
+    async (fields: { full_name: string; phone: string | null }) => {
+      if (!state.profile) return { error: { message: 'Profil introuvable' } };
+
+      const { error } = await supabase
+        .from('profiles')
+        .update(fields)
+        .eq('id', state.profile.id);
+
+      if (error) return { error };
+
+      setState((s) => ({
+        ...s,
+        profile: s.profile ? { ...s.profile, ...fields } : s.profile,
+      }));
+      return { error: null };
+    },
+    [state.profile]
+  );
+
+  return { ...state, signIn, signOut, updateProfile };
 }

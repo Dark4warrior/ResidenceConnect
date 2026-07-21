@@ -45,13 +45,19 @@ describe('Analytics', () => {
     await waitFor(() => expect(screen.getByText('2')).toBeInTheDocument());
   });
 
-  it('affiche le taux de résolution calculé', async () => {
+  it('affiche le taux de résolution des 7 derniers jours', async () => {
+    // Le taux est hebdomadaire : on utilise des dates récentes pour qu'elles
+    // tombent dans la fenêtre glissante.
+    const recent = new Date().toISOString();
     hookState.tickets = [
-      makeTicket({ status: 'resolved', resolved_at: '2026-07-01T18:00:00Z' }),
-      makeTicket({ status: 'pending' }),
+      makeTicket({ status: 'resolved', created_at: recent, resolved_at: recent }),
+      makeTicket({ status: 'pending', created_at: recent }),
     ];
     render(<Analytics />);
-    await waitFor(() => expect(screen.getByText('50 %')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText('Taux de résolution (7 j)')).toBeInTheDocument()
+    );
+    expect(screen.getByText('50 %')).toBeInTheDocument();
   });
 
   it('signale la source des indicateurs', async () => {
@@ -66,7 +72,7 @@ describe('Analytics', () => {
     render(<Analytics />);
     expect(screen.getByText('Analytics')).toBeInTheDocument();
     await waitFor(() =>
-      expect(screen.getByText('Taux de résolution')).toBeInTheDocument()
+      expect(screen.getByText('Taux de résolution (7 j)')).toBeInTheDocument()
     );
   });
 });

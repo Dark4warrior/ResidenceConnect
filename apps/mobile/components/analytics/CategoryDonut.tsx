@@ -3,12 +3,13 @@ import type { TicketCategory } from '@residenceconnect/shared';
 import { TICKET_CATEGORY_LABELS } from '@residenceconnect/shared';
 import { colors, spacing, radius, fontSize, fontWeight } from '../../theme';
 
-/** Couleur dédiée à chaque catégorie d'incident. */
+// Nuances de la couleur de marque plutôt que quatre couleurs vives : plus
+// sobre, cohérent avec une application professionnelle.
 export const CATEGORY_COLORS: Record<TicketCategory, string> = {
-  plumbing: '#3B82F6',
-  electricity: '#F59E0B',
-  elevator: '#8B5CF6',
-  other: '#94A3B8',
+  plumbing: '#1E3A5F',
+  electricity: '#3B5A80',
+  elevator: '#6B87A6',
+  other: '#AFC0D2',
 };
 
 const ORDER: TicketCategory[] = ['plumbing', 'electricity', 'elevator', 'other'];

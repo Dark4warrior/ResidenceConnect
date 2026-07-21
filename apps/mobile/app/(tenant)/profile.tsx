@@ -104,15 +104,6 @@ export default function TenantProfileScreen() {
         />
       </Section>
 
-      <Section title="Besoin d'aide ?">
-        <Text style={styles.helpText}>
-          Pour toute question sur un signalement en cours, contactez le
-          gestionnaire de votre résidence. Les incidents urgents (fuite
-          importante, panne d&apos;ascenseur, coupure électrique) sont traités
-          en priorité.
-        </Text>
-      </Section>
-
       <Pressable
         onPress={confirmSignOut}
         accessibilityRole="button"
