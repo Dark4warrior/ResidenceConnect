@@ -5,6 +5,7 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
+    "test": "jest --coverage --watchAll=false",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {

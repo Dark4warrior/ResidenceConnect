@@ -1,0 +1,248 @@
+# API — Edge Functions ResidenceConnect
+
+Documentation des Edge Functions Deno déployées sous `supabase/functions/`.
+
+URL de base (projet lié) :
+
+```
+https://<PROJECT_REF>.supabase.co/functions/v1/<function-name>
+```
+
+En local (`supabase functions serve`) :
+
+```
+http://127.0.0.1:54321/functions/v1/<function-name>
+```
+
+---
+
+## 1. `priority-scoring`
+
+Calcule un score de priorité déterministe à partir de l'urgence et de la catégorie
+d'un ticket. L'algorithme est une copie locale de
+`packages/shared/src/scoring.ts` (fichier
+`supabase/functions/priority-scoring/scoring.ts`).
+
+| | |
+|---|---|
+| **Méthode** | `POST` |
+| **Auth JWT** | Non requise (`verify_jwt = false`) |
+| **CORS** | Oui (`OPTIONS` + en-têtes `Access-Control-Allow-*`) |
+
+### Corps d'entrée
+
+```json
+{
+  "urgency": "low | medium | high | critical",
+  "category": "plumbing | electricity | elevator | other"
+}
+```
+
+### Réponses
+
+**200** — score calculé :
+
+```json
+{ "score": 75, "label": "haute" }
+```
+
+Libellés possibles : `faible` | `normale` | `haute` | `immédiate`.
+
+**400** — entrée invalide :
+
+```json
+{ "error": "urgency invalide. Valeurs acceptées : low | medium | high | critical." }
+```
+
+**405** — méthode autre que `POST` / `OPTIONS`.
+
+### Exemple curl
+
+```bash
+curl -i -X POST 'http://127.0.0.1:54321/functions/v1/priority-scoring' \
+  -H 'Content-Type: application/json' \
+  -d '{"urgency":"high","category":"elevator"}'
+```
+
+---
+
+## 2. `notify-status-change`
+
+Réagit à un **Database Webhook** sur `UPDATE` de `public.tickets` : si le statut
+change, crée une notification (`type = status_changed`) pour le déclarant
+(`reported_by`) via le client `service_role` (contourne le RLS), puis envoie un
+push Expo à chaque `push_tokens.expo_push_token` de cet utilisateur.
+
+| | |
+|---|---|
+| **Méthode** | `POST` |
+| **Auth JWT** | Requise (`verify_jwt = true`) — envoyer `Authorization: Bearer <anon_ou_service_key>` |
+| **Secrets** | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (via `Deno.env`) |
+
+### Corps d'entrée (payload webhook Supabase)
+
+```json
+{
+  "type": "UPDATE",
+  "table": "tickets",
+  "schema": "public",
+  "record": {
+    "id": "…",
+    "title": "Fuite cuisine",
+    "status": "in_progress",
+    "reported_by": "…"
+  },
+  "old_record": {
+    "id": "…",
+    "title": "Fuite cuisine",
+    "status": "pending",
+    "reported_by": "…"
+  }
+}
+```
+
+### Réponses
+
+**200** — statut inchangé :
+
+```json
+{ "skipped": true }
+```
+
+**200** — notification créée + pushes envoyés :
+
+```json
+{
+  "ok": true,
+  "notification_created": true,
+  "pushes_sent": 2
+}
+```
+
+**400** — JSON / payload invalide (`record` / `old_record` manquants).
+
+**500** — secrets absents, erreur Supabase, ou échec API Expo :
+
+```json
+{ "error": "…" }
+```
+
+Message notification (exemple) :
+
+> Votre signalement « Fuite cuisine » est passé au statut : En cours.
+
+Traduction des statuts : `pending` → En attente, `in_progress` → En cours,
+`resolved` → Résolu.
+
+### Déclenchement : la migration 007
+
+Le lien entre le changement de statut et cette fonction est **versionné** dans
+`supabase/migrations/007_status_change_webhook.sql`, plutôt que configuré à la
+main dans le dashboard. La migration :
+
+- crée un trigger `AFTER UPDATE ON public.tickets` déclenché uniquement quand le
+  statut change (`WHEN (OLD.status IS DISTINCT FROM NEW.status)`) ;
+- appelle la fonction via `pg_net` (`net.http_post`), de façon asynchrone : un
+  échec du webhook ne bloque jamais la mise à jour du ticket ;
+- envoie le payload `{ type, table, schema, record, old_record }` attendu par la
+  fonction ;
+- joint la **clé anon publique** dans l'en-tête `Authorization` pour satisfaire
+  `verify_jwt`. Elle ne donne aucun privilège : la fonction écrit ensuite avec
+  sa propre clé `service_role`, injectée par Supabase.
+
+Il suffit donc d'appliquer les migrations et de déployer la fonction — aucune
+configuration manuelle de webhook. Les secrets `SUPABASE_URL` et
+`SUPABASE_SERVICE_ROLE_KEY` sont fournis automatiquement à la fonction en
+production (voir les « Default secrets » du projet).
+
+---
+
+## Commandes — test local
+
+Prérequis : [Supabase CLI](https://supabase.com/docs/guides/cli), Deno et/ou Docker.
+
+```bash
+# Démarrer la stack locale (DB + API + Functions runtime)
+supabase start
+
+# Servir les Edge Functions en local (hot-reload)
+supabase functions serve
+
+# Ou une seule fonction :
+supabase functions serve priority-scoring --no-verify-jwt
+supabase functions serve notify-status-change
+```
+
+Test `priority-scoring` :
+
+```bash
+curl -X POST 'http://127.0.0.1:54321/functions/v1/priority-scoring' \
+  -H 'Content-Type: application/json' \
+  -d '{"urgency":"critical","category":"electricity"}'
+```
+
+Test `notify-status-change` (payload simulé) :
+
+```bash
+curl -X POST 'http://127.0.0.1:54321/functions/v1/notify-status-change' \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+  -d '{
+    "type": "UPDATE",
+    "table": "tickets",
+    "schema": "public",
+    "record": {
+      "id": "<ticket-uuid>",
+      "title": "Ascenseur bloqué",
+      "status": "in_progress",
+      "reported_by": "<user-uuid>"
+    },
+    "old_record": {
+      "id": "<ticket-uuid>",
+      "title": "Ascenseur bloqué",
+      "status": "pending",
+      "reported_by": "<user-uuid>"
+    }
+  }'
+```
+
+---
+
+## Commandes — déploiement
+
+```bash
+# 1. S'authentifier (ouvre le navigateur) — obligatoire avant tout `link`
+supabase login
+
+# 2. Lier le dépôt local au projet distant
+supabase link --project-ref <PROJECT_REF>
+
+# 3. Déployer chaque fonction
+supabase functions deploy priority-scoring
+supabase functions deploy notify-status-change
+```
+
+> **Aucun secret à créer.** `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` font
+> partie des **« Default secrets »** réservés, injectés automatiquement dans
+> chaque projet (Dashboard → Edge Functions → Secrets). Ne jamais les passer
+> manuellement via `supabase secrets set` : la clé se retrouverait dans
+> l'historique du shell. `supabase secrets set` ne sert qu'aux secrets
+> **personnalisés** (clé d'API tierce, etc.).
+>
+> Note : `SUPABASE_SERVICE_ROLE_KEY` est marquée *deprecated* par Supabase au
+> profit de `SUPABASE_SECRET_KEYS` (dictionnaire JSON). La variable historique
+> reste fonctionnelle ; migration à prévoir si Supabase la retire.
+
+Déployer les fonctions **avant** d'appliquer la migration 007, qui appelle
+`notify-status-change`.
+
+### Erreur fréquente au `link`
+
+```
+Unexpected error retrieving remote project status:
+"Your account does not have the necessary privileges to access this endpoint."
+```
+
+Message trompeur : il ne s'agit pas d'un problème de droits mais d'une **absence
+d'authentification**. Le CLI appelle l'API sans jeton. Lancer `supabase login`
+(ou définir `SUPABASE_ACCESS_TOKEN`) avant de relancer `supabase link`.

@@ -9,7 +9,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "jest --watchAll=false",
+    "test": "jest --coverage --watchAll=false",
     "lint": "eslint . --ext .ts,.tsx",
     "type-check": "tsc --noEmit"
   },
@@ -20,6 +20,8 @@
     "expo": "~54.0.35",
     "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.13",
+    "expo-crypto": "~15.0.9",
+    "expo-file-system": "~19.0.23",
     "expo-font": "~14.0.12",
     "expo-image-picker": "~17.0.11",
     "expo-linking": "~8.0.12",
@@ -50,13 +52,19 @@
   },
   "jest": {
     "preset": "jest-expo",
-    "setupFilesAfterFramework": [
+    "setupFilesAfterEnv": [
       "@testing-library/react-native/extend-expect"
     ],
     "collectCoverageFrom": [
-      "src/**/*.{ts,tsx}",
       "hooks/**/*.{ts,tsx}",
+      "lib/photos.ts",
+      "lib/secureStorage.ts",
       "!**/*.d.ts"
+    ],
+    "coverageReporters": [
+      "text-summary",
+      "json-summary",
+      "lcov"
     ],
     "coverageThreshold": {
       "global": {

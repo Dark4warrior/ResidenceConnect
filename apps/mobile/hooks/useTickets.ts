@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import type {
   Ticket,
   TicketCategory,
+  TicketStatus,
   UrgencyLevel,
 } from '@residenceconnect/shared';
 
@@ -72,5 +73,87 @@ export function useTickets() {
     [fetchTickets]
   );
 
-  return { tickets, loading, error, refetch: fetchTickets, createTicket };
+  /**
+   * Change le statut d'un ticket ET journalise le changement dans
+   * `ticket_history`.
+   *
+   * L'écriture de l'audit est faite ici, au plus près de la mutation, pour
+   * qu'aucun écran ne puisse changer un statut sans laisser de trace. Le
+   * `changed_by` provient de la fonction SQL `current_profile_id()`
+   * (SECURITY DEFINER) : l'identité de l'auteur ne peut donc pas être
+   * falsifiée depuis le client.
+   *
+   * Si le ticket passe à « resolved », `resolved_at` est horodaté ; il est
+   * remis à null dans le cas contraire (réouverture).
+   *
+   * @param comment commentaire facultatif joint à l'entrée d'audit.
+   */
+  const updateStatus = useCallback(
+    async (ticketId: string, status: TicketStatus, comment?: string) => {
+      const previous = tickets.find((t) => t.id === ticketId)?.status ?? null;
+
+      const { error: updateError } = await supabase
+        .from('tickets')
+        .update({
+          status,
+          resolved_at: status === 'resolved' ? new Date().toISOString() : null,
+        })
+        .eq('id', ticketId);
+
+      if (updateError) return { error: updateError };
+
+      // Journal d'audit — le statut a réellement changé.
+      if (previous !== null && previous !== status) {
+        const { data: profileId, error: rpcError } = await supabase.rpc(
+          'current_profile_id'
+        );
+
+        if (rpcError) {
+          // Le ticket est modifié mais l'audit a échoué : on le signale
+          // explicitement plutôt que de l'ignorer silencieusement.
+          return { error: rpcError };
+        }
+
+        const { error: historyError } = await supabase
+          .from('ticket_history')
+          .insert({
+            ticket_id: ticketId,
+            changed_by: profileId as string,
+            old_status: previous,
+            new_status: status,
+            comment: comment ?? null,
+          });
+
+        if (historyError) return { error: historyError };
+      }
+
+      await fetchTickets();
+      return { error: null };
+    },
+    [tickets, fetchTickets]
+  );
+
+  /** Assigne (ou retire avec `null`) un technicien à un ticket. */
+  const assignTechnician = useCallback(
+    async (ticketId: string, technicianId: string | null) => {
+      const { error: updateError } = await supabase
+        .from('tickets')
+        .update({ assigned_to: technicianId })
+        .eq('id', ticketId);
+
+      if (!updateError) await fetchTickets();
+      return { error: updateError };
+    },
+    [fetchTickets]
+  );
+
+  return {
+    tickets,
+    loading,
+    error,
+    refetch: fetchTickets,
+    createTicket,
+    updateStatus,
+    assignTechnician,
+  };
 }

@@ -1,0 +1,57 @@
+name: Build Mobile (EAS)
+
+# Déclenche un build Expo EAS de l'app mobile sur chaque push vers main.
+# Le build s'exécute sur les serveurs EAS (option --no-wait) ; le job vérifie
+# d'abord la présence du secret EXPO_TOKEN et s'auto-ignore proprement s'il est
+# absent, pour ne jamais faire échouer main tant que le compte EAS n'est pas
+# configuré.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # permet aussi un déclenchement manuel
+
+jobs:
+  build:
+    name: Build EAS Android (preview)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Vérification du secret EXPO_TOKEN
+        id: guard
+        run: echo "enabled=${{ secrets.EXPO_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Information si EAS non configuré
+        if: steps.guard.outputs.enabled != 'true'
+        run: |
+          echo "::notice::EXPO_TOKEN absent — build EAS ignoré."
+          echo "Pour l'activer : créer un projet EAS (eas init), puis ajouter"
+          echo "le secret EXPO_TOKEN dans Settings > Secrets and variables > Actions."
+
+      - name: Installation de pnpm
+        if: steps.guard.outputs.enabled == 'true'
+        uses: pnpm/action-setup@v4
+
+      - name: Installation de Node.js
+        if: steps.guard.outputs.enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Installation des dépendances
+        if: steps.guard.outputs.enabled == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Configuration d'EAS
+        if: steps.guard.outputs.enabled == 'true'
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android (profil preview, APK)
+        if: steps.guard.outputs.enabled == 'true'
+        working-directory: apps/mobile
+        run: eas build --platform android --profile preview --non-interactive --no-wait

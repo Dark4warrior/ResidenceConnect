@@ -1,0 +1,58 @@
+name: CI
+
+# Intégration continue : qualité du code vérifiée sur chaque push vers main
+# et sur chaque pull request (lint, typage strict, tests + couverture).
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Annule les exécutions obsolètes quand un nouveau commit arrive sur la même réf.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint · Type-check · Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Installation de pnpm
+        uses: pnpm/action-setup@v4
+        # La version est lue depuis le champ "packageManager" du package.json.
+
+      - name: Installation de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Installation des dépendances
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (ESLint)
+        run: pnpm lint
+
+      - name: Vérification des types (TypeScript strict)
+        run: pnpm type-check
+
+      - name: Tests unitaires + couverture (seuil 70 %)
+        run: pnpm test
+
+      - name: Résumé de couverture (visible dans le job)
+        if: always()
+        run: node scripts/coverage-summary.mjs >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Archivage des rapports de couverture
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: |
+            apps/mobile/coverage
+            apps/web/coverage
+            packages/shared/coverage
+          if-no-files-found: ignore

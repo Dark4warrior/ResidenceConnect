@@ -30,35 +30,51 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      const profile = session?.user
-        ? await fetchProfile(session.user.id)
-        : null;
+    let active = true;
 
+    /**
+     * Applique une session à l'état. `loading` repasse TOUJOURS à false, même
+     * en cas d'échec : sans cela, la moindre erreur (session illisible,
+     * réseau indisponible) laisserait l'application bloquée indéfiniment sur
+     * l'écran de chargement du layout racine.
+     */
+    const applySession = async (session: Session | null) => {
+      let profile: Profile | null = null;
+      try {
+        if (session?.user) profile = await fetchProfile(session.user.id);
+      } catch {
+        profile = null;
+      }
+      if (!active) return;
       setState({
         session,
         user: session?.user ?? null,
         profile,
         loading: false,
       });
-    });
+    };
+
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => applySession(session))
+      .catch(() => {
+        // Session illisible ou stockage indisponible : on retombe sur l'état
+        // « déconnecté », ce qui affiche l'écran de connexion.
+        if (active) {
+          setState({ session: null, user: null, profile: null, loading: false });
+        }
+      });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        const profile = session?.user
-          ? await fetchProfile(session.user.id)
-          : null;
-
-        setState({
-          session,
-          user: session?.user ?? null,
-          profile,
-          loading: false,
-        });
+      (_event, session) => {
+        void applySession(session);
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, [fetchProfile]);
 
   const signIn = async (email: string, password: string) => {
