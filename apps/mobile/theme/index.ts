@@ -22,7 +22,10 @@ export const colors = {
   // Texte
   text: '#0F172A',
   textMuted: '#64748B',
-  textLight: '#94A3B8',
+  // Anciennement #94A3B8 (contraste 2.6:1 sur blanc, échec WCAG AA).
+  // Relevé à ~4.6:1 : la nuance reste plus claire que textMuted tout en
+  // restant lisible. La hiérarchie repose désormais aussi sur la graisse.
+  textLight: '#67768C',
   textOnPrimary: '#FFFFFF',
 
   // Bordures

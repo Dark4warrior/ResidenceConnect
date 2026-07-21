@@ -36,6 +36,12 @@ export function Button({
       ]}
       activeOpacity={0.85}
       disabled={isDisabled}
+      // Rôle et état exposés aux lecteurs d'écran (VoiceOver / TalkBack).
+      // `busy` annonce le chargement et `accessibilityLabel` garde un nom
+      // même quand le texte est remplacé par l'indicateur d'activité.
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
+      accessibilityLabel={title}
       {...props}
     >
       {loading ? (
