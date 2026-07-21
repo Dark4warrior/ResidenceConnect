@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../context/AuthContext';
 import { ConfigBanner } from './ConfigBanner';
 
@@ -16,6 +17,22 @@ const tabClass = ({ isActive }: { isActive: boolean }) =>
 export function Layout() {
   const { profile, signOut } = useAuthContext();
   const navigate = useNavigate();
+  const location = useLocation();
+  const mainRef = useRef<HTMLElement>(null);
+  // On saute le tout premier rendu : déplacer le focus au montage volerait le
+  // focus initial et ferait défiler la page sans raison.
+  const isFirstRender = useRef(true);
+
+  // Navigation SPA : à chaque changement de route, on ramène le focus sur la
+  // zone de contenu pour que les utilisateurs clavier / lecteur d'écran
+  // repartent du nouveau contenu et non du dernier élément cliqué.
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    mainRef.current?.focus();
+  }, [location.pathname]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -24,11 +41,17 @@ export function Layout() {
 
   return (
     <div className="min-h-screen">
+      <a
+        href="#main"
+        className="sr-only rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50"
+      >
+        Aller au contenu
+      </a>
       <ConfigBanner />
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
           <span className="text-lg font-bold text-brand">ResidenceConnect</span>
-          <nav className="flex items-center gap-2">
+          <nav aria-label="Navigation principale" className="flex items-center gap-2">
             <NavLink to="/" end className={tabClass}>
               Tickets
             </NavLink>
@@ -69,7 +92,12 @@ export function Layout() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6">
+      <main
+        id="main"
+        ref={mainRef}
+        tabIndex={-1}
+        className="mx-auto max-w-6xl px-4 py-6 focus:outline-none"
+      >
         <Outlet />
       </main>
     </div>

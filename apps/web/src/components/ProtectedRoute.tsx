@@ -14,9 +14,9 @@ export function ProtectedRoute() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-slate-400">
+      <main className="flex min-h-screen items-center justify-center text-slate-500">
         Chargement…
-      </div>
+      </main>
     );
   }
 
@@ -29,7 +29,7 @@ export function ProtectedRoute() {
       profile.role === 'tenant' ? 'locataire' : 'technicien';
 
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
+      <main className="flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-50">
             <span className="text-2xl" aria-hidden="true">
@@ -54,7 +54,7 @@ export function ProtectedRoute() {
             Changer de compte
           </button>
         </div>
-      </div>
+      </main>
     );
   }
 
