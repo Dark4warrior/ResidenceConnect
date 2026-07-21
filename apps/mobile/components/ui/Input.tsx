@@ -8,6 +8,7 @@ import {
   TextInputProps,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../../theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -25,6 +26,7 @@ export function Input({
   icon,
   error,
   isPassword = false,
+  accessibilityLabel,
   ...props
 }: InputProps) {
   const [focused, setFocused] = useState(false);
@@ -44,33 +46,49 @@ export function Input({
           <Ionicons
             name={icon}
             size={20}
-            color={focused ? '#1e3a5f' : '#94a3b8'}
+            color={focused ? colors.primary : colors.textLight}
             style={styles.icon}
+            // Icône décorative : ignorée par les lecteurs d'écran (le champ
+            // porte déjà son propre libellé).
+            accessibilityElementsHidden
+            importantForAccessibility="no"
           />
         )}
         <TextInput
           style={styles.input}
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor={colors.textLight}
           secureTextEntry={hidden}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
+          // Nom accessible du champ : libellé explicite s'il est fourni, sinon
+          // le label visible, sinon le placeholder — jamais un champ anonyme.
+          accessibilityLabel={accessibilityLabel ?? label ?? props.placeholder}
           {...props}
         />
         {isPassword && (
           <TouchableOpacity
             onPress={() => setHidden((h) => !h)}
-            hitSlop={8}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             style={styles.eye}
+            accessibilityRole="button"
+            accessibilityLabel={
+              hidden ? 'Afficher le mot de passe' : 'Masquer le mot de passe'
+            }
           >
             <Ionicons
               name={hidden ? 'eye-outline' : 'eye-off-outline'}
               size={20}
-              color="#94a3b8"
+              color={colors.textLight}
             />
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text style={styles.error}>{error}</Text>}
+      {/* L'erreur est annoncée dès son apparition (Android : live region). */}
+      {error && (
+        <Text style={styles.error} accessibilityLiveRegion="polite">
+          {error}
+        </Text>
+      )}
     </View>
   );
 }

@@ -100,14 +100,21 @@ export default function RegisterScreen() {
 
         <View style={styles.card}>
           {error && (
-            <View style={styles.errorBox}>
-              <Ionicons name="alert-circle" size={18} color="#ef4444" />
+            <View style={styles.errorBox} accessibilityLiveRegion="assertive">
+              <Ionicons
+                name="alert-circle"
+                size={18}
+                color="#ef4444"
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
 
           <Input
             icon="person-outline"
+            accessibilityLabel="Nom complet (obligatoire)"
             placeholder="Nom complet *"
             value={fullName}
             onChangeText={setFullName}
@@ -116,6 +123,7 @@ export default function RegisterScreen() {
 
           <Input
             icon="mail-outline"
+            accessibilityLabel="Adresse email (obligatoire)"
             placeholder="Adresse email *"
             value={email}
             onChangeText={setEmail}
@@ -126,6 +134,7 @@ export default function RegisterScreen() {
 
           <Input
             icon="call-outline"
+            accessibilityLabel="Téléphone"
             placeholder="Téléphone"
             value={phone}
             onChangeText={setPhone}
@@ -135,6 +144,7 @@ export default function RegisterScreen() {
 
           <Input
             icon="lock-closed-outline"
+            accessibilityLabel="Mot de passe (obligatoire, au moins 8 caractères)"
             placeholder="Mot de passe * (min. 8 caractères)"
             value={password}
             onChangeText={setPassword}
@@ -152,11 +162,16 @@ export default function RegisterScreen() {
                   style={[styles.roleCard, active && styles.roleCardActive]}
                   onPress={() => setRole(r.value)}
                   activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`Rôle ${r.label}`}
                 >
                   <Ionicons
                     name={r.icon}
                     size={22}
                     color={active ? '#fff' : '#64748b'}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                   />
                   <Text
                     style={[styles.roleText, active && styles.roleTextActive]}

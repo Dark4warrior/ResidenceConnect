@@ -1,6 +1,10 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { TICKET_CATEGORY_LABELS } from '@residenceconnect/shared';
+import {
+  TICKET_CATEGORY_LABELS,
+  TICKET_STATUS_LABELS,
+  URGENCY_LEVEL_LABELS,
+} from '@residenceconnect/shared';
 import { StatusBadge, UrgencyBadge } from './TicketStatusBadge';
 import type { TicketListItem } from '../../hooks/useTickets';
 
@@ -26,8 +30,26 @@ interface TicketCardProps {
 
 /** Carte résumant un ticket dans une liste. */
 export function TicketCard({ ticket, onPress }: TicketCardProps) {
+  // Résumé lu d'un seul tenant par les lecteurs d'écran, au lieu d'égrener
+  // chaque bout de texte de la carte séparément.
+  const logement = ticket.apartment?.unit_number
+    ? `, logement ${ticket.apartment.unit_number}`
+    : '';
+  const summary =
+    `${ticket.title}. ${TICKET_CATEGORY_LABELS[ticket.category]}${logement}. ` +
+    `Statut : ${TICKET_STATUS_LABELS[ticket.status]}. ` +
+    `Urgence : ${URGENCY_LEVEL_LABELS[ticket.urgency_level]}. ` +
+    `Créé le ${formatDate(ticket.created_at)}.`;
+
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={summary}
+      accessibilityHint="Ouvre le détail du signalement"
+    >
       <View style={styles.header}>
         <View style={styles.iconBox}>
           <Ionicons

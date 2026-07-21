@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   FlatList,
   Pressable,
+  AccessibilityInfo,
 } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -120,6 +121,11 @@ export default function ManagerTicketDetailScreen() {
       setActionError(errorMessage(error, 'Échec du changement de statut.'));
       return;
     }
+    // Changement de statut sans transition visuelle explicite : on l'annonce
+    // aux lecteurs d'écran (VoiceOver / TalkBack).
+    AccessibilityInfo.announceForAccessibility(
+      `Statut mis à jour : ${TICKET_STATUS_LABELS[status]}`,
+    );
     await Promise.all([loadTicket(), refetch(), refetchHistory()]);
   };
 
@@ -183,6 +189,9 @@ export default function ManagerTicketDetailScreen() {
                     disabled={statusSaving || active}
                     onPress={() => void handleStatus(s)}
                     activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active, disabled: statusSaving || active }}
+                    accessibilityLabel={`Passer le statut à ${TICKET_STATUS_LABELS[s]}`}
                   >
                     <Text
                       style={[styles.statusBtnText, active && styles.statusBtnTextActive]}
@@ -228,6 +237,9 @@ export default function ManagerTicketDetailScreen() {
               onPress={() => void handleAssign(null)}
               disabled={assignSaving}
               style={styles.unassign}
+              accessibilityRole="button"
+              accessibilityLabel="Retirer l’assignation du technicien"
+              accessibilityState={{ disabled: assignSaving }}
             >
               <Text style={styles.unassignText}>Retirer l’assignation</Text>
             </TouchableOpacity>
@@ -235,8 +247,14 @@ export default function ManagerTicketDetailScreen() {
         </DetailCard>
 
         {actionError ? (
-          <View style={styles.errorBox}>
-            <Ionicons name="alert-circle" size={18} color={colors.danger} />
+          <View style={styles.errorBox} accessibilityLiveRegion="assertive">
+            <Ionicons
+              name="alert-circle"
+              size={18}
+              color={colors.danger}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
             <Text style={styles.errorText}>{actionError}</Text>
           </View>
         ) : null}
@@ -287,9 +305,20 @@ export default function ManagerTicketDetailScreen() {
       </ScrollView>
 
       <Modal visible={pickerOpen} animationType="slide" transparent>
-        <Pressable style={styles.modalBackdrop} onPress={() => setPickerOpen(false)}>
-          <Pressable style={styles.modalSheet} onPress={(e) => e.stopPropagation()}>
-            <Text style={styles.modalTitle}>Assigner un technicien</Text>
+        <Pressable
+          style={styles.modalBackdrop}
+          onPress={() => setPickerOpen(false)}
+          accessibilityRole="button"
+          accessibilityLabel="Fermer la fenêtre"
+        >
+          <Pressable
+            style={styles.modalSheet}
+            onPress={(e) => e.stopPropagation()}
+            accessibilityViewIsModal
+          >
+            <Text style={styles.modalTitle} accessibilityRole="header">
+              Assigner un technicien
+            </Text>
             <FlatList
               data={technicians}
               keyExtractor={(item) => item.id}
@@ -302,10 +331,19 @@ export default function ManagerTicketDetailScreen() {
                   <TouchableOpacity
                     style={[styles.techRow, selected && styles.techRowSelected]}
                     onPress={() => void handleAssign(item.id)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    accessibilityLabel={`Assigner à ${item.full_name}`}
                   >
                     <Text style={styles.techName}>{item.full_name}</Text>
                     {selected ? (
-                      <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={20}
+                        color={colors.primary}
+                        accessibilityElementsHidden
+                        importantForAccessibility="no"
+                      />
                     ) : null}
                   </TouchableOpacity>
                 );
