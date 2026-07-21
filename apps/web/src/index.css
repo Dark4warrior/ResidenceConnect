@@ -9,3 +9,15 @@
 body {
   @apply bg-slate-50 text-slate-800 antialiased;
 }
+
+/*
+ * Indicateur de focus visible et homogène pour la navigation au clavier
+ * (WCAG 2.4.7 / RGAA 10.7). Appliqué à TOUT élément atteint au clavier, ce
+ * qui couvre d'office les boutons d'action qui n'avaient aucun style de focus.
+ * Les champs de saisie conservent leur propre anneau (`focus:ring`), de
+ * spécificité supérieure, donc pas de double indicateur sur les formulaires.
+ */
+:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}

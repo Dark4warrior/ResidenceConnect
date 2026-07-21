@@ -62,7 +62,7 @@ export function TicketDetail() {
     if (assignError) setSaveError(assignError.message);
   };
 
-  if (loading) return <p className="text-sm text-slate-400">Chargement…</p>;
+  if (loading) return <p className="text-sm text-slate-500">Chargement…</p>;
   if (error)
     return (
       <p className="rounded-lg bg-red-50 p-4 text-sm text-red-700">{error}</p>
@@ -106,7 +106,7 @@ export function TicketDetail() {
       </dl>
 
       <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
-        <p className="text-sm font-medium text-slate-700">Description</p>
+        <h2 className="text-sm font-medium text-slate-700">Description</h2>
         <p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">
           {ticket.description}
         </p>
@@ -114,9 +114,9 @@ export function TicketDetail() {
 
       {photos.length > 0 ? (
         <div className="mt-6">
-          <p className="text-sm font-medium text-slate-700">
+          <h2 className="text-sm font-medium text-slate-700">
             Photos ({photos.length})
-          </p>
+          </h2>
           <div className="mt-2 flex flex-wrap gap-3">
             {photos.map((p) => (
               <a
@@ -138,7 +138,7 @@ export function TicketDetail() {
       ) : null}
 
       <div className="mt-6">
-        <p className="text-sm font-medium text-slate-700">Changer le statut</p>
+        <h2 className="text-sm font-medium text-slate-700">Changer le statut</h2>
         <div className="mt-2 flex flex-wrap gap-2">
           {STATUS_ORDER.map((s) => (
             <button
@@ -186,13 +186,13 @@ export function TicketDetail() {
       <div className="mt-8">
         <h2 className="text-sm font-semibold text-slate-800">Historique</h2>
         {loadingHistory ? (
-          <p className="mt-2 text-sm text-slate-400">Chargement de l’historique…</p>
+          <p className="mt-2 text-sm text-slate-500">Chargement de l’historique…</p>
         ) : null}
         {historyError ? (
           <p className="mt-2 text-sm text-red-600">{historyError}</p>
         ) : null}
         {!loadingHistory && !historyError && history.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-slate-500">
             Aucun changement enregistré pour l’instant.
           </p>
         ) : null}
@@ -209,7 +209,7 @@ export function TicketDetail() {
                   TICKET_STATUS_LABELS,
                 )}
               </p>
-              <p className="mt-0.5 text-xs text-slate-400">
+              <p className="mt-0.5 text-xs text-slate-500">
                 {entry.author?.full_name ?? 'Utilisateur inconnu'} ·{' '}
                 {formatDateTime(entry.changed_at)}
               </p>
@@ -229,7 +229,7 @@ export function TicketDetail() {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-slate-400">{label}</dt>
+      <dt className="text-xs uppercase tracking-wide text-slate-500">{label}</dt>
       <dd className="mt-0.5 text-sm text-slate-700">{value}</dd>
     </div>
   );

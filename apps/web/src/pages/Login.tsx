@@ -30,7 +30,7 @@ export function Login() {
   return (
     <div className="min-h-screen">
       <ConfigBanner />
-      <div className="flex min-h-[80vh] items-center justify-center px-4">
+      <main className="flex min-h-[80vh] items-center justify-center px-4">
         <form
           onSubmit={handleSubmit}
           className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"
@@ -77,12 +77,12 @@ export function Login() {
           </button>
 
           {!isSupabaseConfigured ? (
-            <p className="mt-3 text-center text-xs text-slate-400">
+            <p className="mt-3 text-center text-xs text-slate-500">
               Connexion désactivée en mode démonstration.
             </p>
           ) : null}
         </form>
-      </div>
+      </main>
     </div>
   );
 }
