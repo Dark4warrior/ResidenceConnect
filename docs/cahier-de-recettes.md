@@ -250,17 +250,55 @@ TalkBack).
 
 ## 11. Campagne de recette — résultats
 
-Synthèse à compléter à l'issue de l'exécution.
+### 11.1 Espace Gestionnaire (web) — exécuté le 2026-07-21 en préversion
 
-| Domaine | Scénarios | ✅ | ❌ | ⏳ |
-| --- | --- | --- | --- | --- |
-| Authentification & sécurité | CR-AUTH-01→06 | | | |
-| Locataire | CR-LOC-01→07 | | | |
-| Gestionnaire | CR-GES-01→10 | | | |
-| Technicien | CR-TEC-01→03 | | | |
-| Transversal | CR-TR-01→03 | | | |
-| RLS (auto) | CR-SEC-01→03 | | | |
-| **Total** | **32** | | | |
+| Scénario | Statut | Résultat obtenu |
+| --- | --- | --- |
+| CR-GES-01 | ✅ | 6 signalements listés (titre, logement, urgence, statut, assigné, date), triés par urgence puis date. |
+| CR-GES-02 | ✅ | Recherche « ascenseur » → 1 résultat, compteur « 1 ticket » ; filtres statut/urgence/catégorie opérationnels. |
+| CR-GES-03 | ✅ | Compteurs Tous 6 / Non attribués 2 / Attribués 4 ; l'onglet « Attribués » n'affiche que des lignes assignées. |
+| CR-GES-04 | ✅ | Détail complet (description, informations, statuts, assignation, historique). |
+| CR-GES-05 | ✅ | Assignation de « Lucas Technicien » reflétée dans le champ « Assigné à ». |
+| CR-GES-06 | ✅ | Désassignation → retour à « Non assigné ». |
+| CR-GES-07 | ✅ | Statut « En attente » → « En cours », **entrée d'historique horodatée** (auteur + transition). |
+| CR-GES-08 | ✅ | Analytics : source « Agrégation SQL » (RPC), 4 KPIs, 3 répartitions. |
+| CR-GES-09 | ✅ | Bouton export activé avec résultats, **désactivé quand la liste est vide** ; génération CSV couverte par 13 tests unitaires (`csv.test.ts`). |
+| CR-GES-10 | ✅ | Champs nom/téléphone pré-remplis, e-mail en **lecture seule**, bouton « Enregistrer » désactivé tant que rien n'est modifié. |
 
-Toute anomalie détectée est enregistrée en *issue* GitHub et traitée selon
-`docs/plan-correction-bogues.md`.
+> Le signalement utilisé pour CR-GES-05→07 a été **remis dans son état
+> d'origine** (statut « En attente », non assigné) après le test. Les entrées
+> d'historique générées subsistent, le journal d'audit étant **immuable** (ce
+> qui valide **CR-TR-02**).
+
+### 11.2 Sécurité / RLS — automatisé
+
+CR-SEC-01→03 sont couverts par **`scripts/test-rls.sh`** (15 assertions
+exécutées contre un vrai projet Supabase).
+
+### 11.3 Espaces mobiles — validés sur appareil
+
+CR-LOC-01→07 et CR-TEC-01→03 sont validés par le *product owner* sur appareil
+réel (l'exécution mobile automatisée côté assistant n'est pas possible sans
+simulateur). L'accessibilité mobile a été validée au lecteur d'écran (VoiceOver
+/ TalkBack).
+
+### 11.4 À exécuter en recette finale
+
+CR-AUTH-01→06, CR-TR-01 (temps réel de bout en bout) et CR-TR-03 (notification)
+restent à dérouler lors de la recette finale.
+
+### 11.5 Synthèse
+
+| Domaine | Scénarios | ✅ | ⏳ |
+| --- | --- | --- | --- |
+| Gestionnaire (web) | CR-GES-01→10 | 10 | 0 |
+| Transversal — audit | CR-TR-02 | 1 | 0 |
+| RLS (auto) | CR-SEC-01→03 | 3 | 0 |
+| Locataire (appareil) | CR-LOC-01→07 | 7 | 0 |
+| Technicien (appareil) | CR-TEC-01→03 | 3 | 0 |
+| Authentification | CR-AUTH-01→06 | 0 | 6 |
+| Transversal — temps réel / notif | CR-TR-01, CR-TR-03 | 0 | 2 |
+| **Total** | **32** | **24** | **8** |
+
+Aucune anomalie détectée lors de cette campagne. Toute anomalie future est
+enregistrée en *issue* GitHub et traitée selon `docs/plan-correction-bogues.md`.
