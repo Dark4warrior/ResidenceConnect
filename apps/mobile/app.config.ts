@@ -5,6 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'ResidenceConnect',
   slug: 'residenceconnect',
+  owner: 'dark4warrior',
   // Les plugins déclarent les autorisations natives (caméra, photothèque).
   // Expo Go les fournit déjà, mais un build EAS planterait sans ces textes —
   // et l'App Store refuse toute app qui accède à la caméra sans justification.
@@ -30,7 +31,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
     supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
     eas: {
-      projectId: '',
+      projectId: 'daf7478e-8a3a-4e91-a368-e1ef49518f27',
     },
   },
 });
