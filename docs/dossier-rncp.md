@@ -16,7 +16,7 @@ lang: fr
 - **Candidat** : Gilchrist Steven LALEYE.
 - **Code source (dépôt GitHub)** : <https://github.com/Dark4warrior/ResidenceConnect>
   (branche `main`, version **v1.0.0**).
-- **Application web déployée** : _(URL Vercel à renseigner après déploiement)_.
+- **Application web déployée** : <https://residence-connect-web.vercel.app>.
 - **Comptes de démonstration** — gestionnaire : `manager@residenceconnect.dev` ·
   locataire : `tenant@residenceconnect.dev` · technicien :
   `technicien@residenceconnect.dev` — mot de passe `Demo1234!`.
