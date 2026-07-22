@@ -41,7 +41,19 @@ Le tout avec **temps réel**, **journal d'audit** et **notifications**.
 - **Accessibilité** conforme WCAG 2.1 AA (`docs/accessibilite.md`).
 - **Processus de correction des bogues** défini (`docs/plan-correction-bogues.md`).
 
-## 5. Comment vérifier
+## 5. Manipulable en autonomie par un utilisateur
+
+- **Application web déployée** : <https://residence-connect-web.vercel.app> — le
+  jury peut se connecter et manipuler l'application sans installation, avec les
+  **comptes de démonstration** :
+  - gestionnaire : `manager@residenceconnect.dev`
+  - locataire : `tenant@residenceconnect.dev`
+  - technicien : `technicien@residenceconnect.dev`
+  - mot de passe : `Demo1234!`
+- **Application mobile** : lançable via Expo Go (`pnpm --filter
+  @residenceconnect/mobile dev`) ou distribuée en APK via EAS.
+
+## 6. Vérifier le code
 
 ```bash
 git clone https://github.com/Dark4warrior/ResidenceConnect.git   # branche main
