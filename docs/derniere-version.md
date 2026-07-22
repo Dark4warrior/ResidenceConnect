@@ -43,9 +43,9 @@ Le tout avec **temps réel**, **journal d'audit** et **notifications**.
 
 ## 5. Manipulable en autonomie par un utilisateur
 
-- **Application web déployée** : _(URL Vercel à renseigner)_ — le jury peut se
-  connecter et manipuler l'application sans installation, avec les **comptes de
-  démonstration** :
+- **Application web déployée** : <https://residence-connect-web.vercel.app> — le
+  jury peut se connecter et manipuler l'application sans installation, avec les
+  **comptes de démonstration** :
   - gestionnaire : `manager@residenceconnect.dev`
   - locataire : `tenant@residenceconnect.dev`
   - technicien : `technicien@residenceconnect.dev`
