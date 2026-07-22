@@ -82,6 +82,12 @@ Ce jeu s'inscrit dans un **harnais global de ~180 tests unitaires** :
   reproduit le bug (cf. `docs/plan-correction-bogues.md`), garantissant qu'il ne
   réapparaîtra pas.
 
+![Résultats de la CI (GitHub Actions) : lint, type-check et tests unitaires avec couverture.](images/tests-github.png)
+
+Chaque exécution est consultable dans l'onglet **Actions** du dépôt GitHub
+(<https://github.com/Dark4warrior/ResidenceConnect/actions>), avec le résumé de
+couverture publié dans le récapitulatif du job.
+
 ## 6. Exécution
 
 ```bash
