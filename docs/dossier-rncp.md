@@ -257,37 +257,14 @@ graph TB
 
 Les unités déployables et leurs communications.
 
-```mermaid
-flowchart TB
-    subgraph Clients
-        mobile["App mobile<br/>(React Native / Expo)"]
-        web["Dashboard web<br/>(React / Vite)"]
-    end
+![Diagramme des conteneurs : les applications mobile et web s'adressent au backend Supabase (Auth JWT, PostgreSQL + RLS, Storage, Realtime, Edge Functions), qui déclenche les notifications Expo Push.](images/architecture-conteneurs.svg)
 
-    shared["packages/shared<br/>(types & constantes TS)"]
-
-    subgraph Supabase["Backend — Supabase"]
-        auth["Auth (JWT)"]
-        db[("PostgreSQL + RLS")]
-        storage["Storage (photos)"]
-        realtime["Realtime"]
-        edge["Edge Functions (Deno)"]
-    end
-
-    push[(Expo Push)]
-
-    Clients --> shared
-    Clients -->|supabase-js| auth
-    Clients -->|requêtes SQL| db
-    mobile -->|upload| storage
-    mobile -->|subscribe| realtime
-    db -->|change events| realtime
-    edge -->|service_role| db
-    edge --> push
-```
-
-Chaque client dépend de `packages/shared` pour garantir des types identiques
-de bout en bout (statuts, catégories, niveaux d'urgence, entités).
+Les deux clients communiquent avec Supabase via **supabase-js** (authentification,
+requêtes soumises à la RLS, upload de photos, abonnement temps réel). Ils
+partagent le paquet **`packages/shared`** (types et constantes TypeScript), ce qui
+garantit des types identiques de bout en bout (statuts, catégories, niveaux
+d'urgence, entités). Les **Edge Functions** déclenchent les notifications via
+**Expo Push**.
 
 _Les schémas de composants (niveau 3, mobile et web) figurent dans `docs/architecture.md`._
 
@@ -380,7 +357,7 @@ complète. Il se prolonge dans les autres écrans (suivi de l'avancement côté
 locataire, dashboard côté gestionnaire) qui réutilisent les mêmes composants et
 tokens de design, garantissant une expérience cohérente sur les deux plateformes.
 
-<img src="images/nouveau-signalement.png" alt="Création d'un signalement (mobile locataire)" width="240" />
+<p align="center"><img src="images/nouveau-signalement.png" alt="Création d'un signalement (mobile locataire)" width="230" /></p>
 
 *Figure — Prototype « signaler un incident » (espace locataire, mobile).*
 
@@ -528,6 +505,12 @@ Ce jeu s'inscrit dans un **harnais global de ~180 tests unitaires** :
 - **Règle d'équipe** : tout correctif de bogue est accompagné d'un test qui
   reproduit le bug (cf. `docs/plan-correction-bogues.md`), garantissant qu'il ne
   réapparaîtra pas.
+
+![Résultats de la CI (GitHub Actions) : lint, type-check et tests unitaires avec couverture.](images/tests-github.png)
+
+Chaque exécution est consultable dans l'onglet **Actions** du dépôt GitHub
+(<https://github.com/Dark4warrior/ResidenceConnect/actions>), avec le résumé de
+couverture publié dans le récapitulatif du job.
 
 ## 6. Exécution
 
@@ -1369,25 +1352,25 @@ migration déjà publiée) — cf. `docs/plan-correction-bogues.md`.
 
 ## Espace locataire (mobile)
 
-<img src="images/signalement-tenant.png" alt="Liste des signalements du locataire" width="210" /> <img src="images/detail-signalement.png" alt="Détail d'un signalement" width="210" />
+<p align="center"><img src="images/signalement-tenant.png" alt="Liste des signalements du locataire" width="200" /> &nbsp; <img src="images/detail-signalement.png" alt="Détail d'un signalement" width="200" /></p>
 
-*Suivi de ses signalements et détail avec frise d'avancement.*
+*Liste de ses signalements, et détail avec frise d'avancement.*
 
 ## Espace gestionnaire (web)
 
-<img src="images/web-acceuil.png" alt="Tableau de bord" width="500" />
+<p align="center"><img src="images/web-acceuil.png" alt="Tableau de bord des signalements" width="560" /></p>
 
 *Tableau de bord : liste filtrable des signalements.*
 
-<img src="images/web-analitics.png" alt="Analytics" width="500" /> <img src="images/manager-detail-mission.png" alt="Détail gestionnaire" width="500" />
+<p align="center"><img src="images/web-analitics.png" alt="Page d'analyse" width="560" /></p>
 
-*Analytics (indicateurs, répartitions) et détail d'un signalement (statut, assignation, historique).*
+*Analyse : indicateurs clés et répartitions.*
 
 ## Espace technicien (mobile)
 
-<img src="images/technicien-acceuil.png" alt="Missions du technicien" width="210" /> <img src="images/technicien-detail-mission.png" alt="Détail d'une mission" width="210" />
+<p align="center"><img src="images/technicien-acceuil.png" alt="Missions du technicien" width="200" /> &nbsp; <img src="images/technicien-detail-mission.png" alt="Détail d'une mission" width="200" /></p>
 
-*Missions assignées et mise à jour du statut sur le terrain.*
+*Missions assignées, et mise à jour du statut sur le terrain.*
 
 ---
 
