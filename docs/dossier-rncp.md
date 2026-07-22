@@ -1,20 +1,21 @@
-# ResidenceConnect — Dossier de projet
+# ResidenceConnect
 
-**Expert en développement logiciel — RNCP 39583 (niveau 7) · Ynov Lyon**
+## Dossier de projet — Bloc 2 : Concevoir et développer des applications logicielles
 
----
+**Titre visé :** Expert en développement logiciel — RNCP 39583 (niveau 7)
+**École :** Ynov Lyon
+**Candidat :** Gilchrist Steven LALEYE
+**Date :** 21 juillet 2026
 
-# Page de garde
+Application de gestion d'incidents en résidence (bailleur social) : un locataire signale un incident depuis son mobile, un gestionnaire l'attribue et le suit depuis un tableau de bord web, un technicien met à jour l'intervention sur le terrain.
 
-**ResidenceConnect** — Application de gestion d'incidents en résidence (bailleur social).
+**Code source** : <https://github.com/Dark4warrior/ResidenceConnect> (branche `main`, version 1.0.0)
 
-- **Titre visé** : Expert en développement logiciel — **RNCP 39583** (niveau 7).
-- **École** : Ynov Lyon.
-- **Candidat** : Gilchrist Steven LALEYE.
-- **Code source (dépôt GitHub)** : <https://github.com/Dark4warrior/ResidenceConnect> (branche `main`, version **v1.0.0**).
-- **Application web déployée** : <https://residence-connect-web.vercel.app>.
-- **Comptes de démonstration** — gestionnaire : `manager@residenceconnect.dev` · locataire : `tenant@residenceconnect.dev` · technicien : `technicien@residenceconnect.dev` — mot de passe `Demo1234!`.
-- **Date** : 21/07/2026.
+**Application web déployée** : <https://residence-connect-web.vercel.app>
+
+**Application mobile (APK Android)** : <https://expo.dev/accounts/dark4warrior/projects/residenceconnect/builds/0f1691ff-c457-42d9-9f9e-66a0040c6684>
+
+**Comptes de démonstration** : gestionnaire `manager@residenceconnect.dev`, locataire `tenant@residenceconnect.dev`, technicien `technicien@residenceconnect.dev` — mot de passe `Demo1234!`
 
 ---
 
@@ -43,22 +44,16 @@
 
 # Correspondance des compétences
 
-| Compétence | Intitulé (résumé) | Section |
-| --- | --- | --- |
-| **C2.2.1** ⚠️ | Concevoir un prototype (ergonomie, équipements, sécurité) | 5 |
-| **C2.2.2** ⚠️ | Harnais de tests unitaires (anti-régression) | 7 |
-| **C2.2.3** ⚠️ | Développer avec accessibilité, sécurisation, évolutivité | 8, 9 |
-| **C2.3.1** ⚠️ | Élaborer le cahier de recette | 12 |
+Le tableau ci-dessous relie chaque compétence évaluée à la section du dossier qui la traite. Les compétences marquées « Oui » en dernière colonne sont éliminatoires.
 
-*(⚠️ = compétence éliminatoire)*
+| Compétence | Intitulé (résumé) | Section | Éliminatoire |
+| --- | --- | --- | --- |
+| C2.2.1 | Concevoir un prototype (ergonomie, équipements, sécurité) | 5 | Oui |
+| C2.2.2 | Harnais de tests unitaires (anti-régression) | 7 | Oui |
+| C2.2.3 | Développer avec accessibilité, sécurisation, évolutivité | 8, 9 | Oui |
+| C2.3.1 | Élaborer le cahier de recette | 12 | Oui |
 
----
-
-# Présentation du projet
-
-ResidenceConnect digitalise la **gestion des incidents** dans les résidences d'un bailleur social. Le **locataire** signale un incident depuis son mobile (avec photo) ; le **gestionnaire** l'attribue et le suit depuis un tableau de bord web ; le **technicien** met à jour l'intervention sur le terrain.
-
-**Stack** : monorepo pnpm + Turborepo — `apps/mobile` (React Native 0.81 / Expo SDK 54), `apps/web` (React 19 + Vite 5 + Tailwind), `packages/shared` (types/constantes TypeScript), `supabase/` (PostgreSQL, Auth, Storage, Realtime, Edge Functions Deno).
+**Stack technique** : monorepo pnpm + Turborepo — `apps/mobile` (React Native 0.81 / Expo SDK 54), `apps/web` (React 19 + Vite 5 + Tailwind), `packages/shared` (types/constantes TypeScript), `supabase/` (PostgreSQL, Auth, Storage, Realtime, Edge Functions Deno).
 
 ---
 
@@ -264,40 +259,14 @@ graph TB
 
 Les unités déployables et leurs communications.
 
-```mermaid
-graph TB
-    subgraph Clients
-        mobile["App mobile<br/>(React Native + Expo)"]
-        web["Dashboard web<br/>(React + Vite)"]
-    end
+![Diagramme des conteneurs : les applications mobile et web s'adressent au backend Supabase (Auth JWT, PostgreSQL + RLS, Storage, Realtime, Edge Functions), qui déclenche les notifications Expo Push.](images/architecture-conteneurs.svg)
 
-    shared["packages/shared<br/>(types & constantes TS)"]
-
-    subgraph Supabase
-        auth["Auth<br/>(JWT / Magic Link)"]
-        db[("PostgreSQL<br/>+ RLS")]
-        storage["Storage<br/>(photos tickets)"]
-        realtime["Realtime<br/>(WebSocket)"]
-        edge["Edge Functions<br/>(Deno) — à venir"]
-    end
-
-    mobile --> shared
-    web --> shared
-
-    mobile -->|supabase-js| auth
-    mobile -->|SELECT/INSERT/UPDATE| db
-    mobile -->|upload| storage
-    mobile -->|subscribe| realtime
-    web -->|supabase-js| auth
-    web -->|SELECT/UPDATE| db
-
-    db -->|change events| realtime
-    edge -->|service_role| db
-    edge --> expo[(Expo Push)]
-```
-
-Chaque client dépend de `packages/shared` pour garantir des types identiques
-de bout en bout (statuts, catégories, niveaux d'urgence, entités).
+Les deux clients communiquent avec Supabase via **supabase-js** (authentification,
+requêtes soumises à la RLS, upload de photos, abonnement temps réel). Ils
+partagent le paquet **`packages/shared`** (types et constantes TypeScript), ce qui
+garantit des types identiques de bout en bout (statuts, catégories, niveaux
+d'urgence, entités). Les **Edge Functions** déclenchent les notifications via
+**Expo Push**.
 
 _Les schémas de composants (niveau 3, mobile et web) figurent dans `docs/architecture.md`._
 
@@ -390,7 +359,7 @@ complète. Il se prolonge dans les autres écrans (suivi de l'avancement côté
 locataire, dashboard côté gestionnaire) qui réutilisent les mêmes composants et
 tokens de design, garantissant une expérience cohérente sur les deux plateformes.
 
-<img src="images/nouveau-signalement.png" alt="Création d'un signalement (mobile locataire)" width="240" />
+<p align="center"><img src="images/nouveau-signalement.png" alt="Création d'un signalement (mobile locataire)" width="230" /></p>
 
 *Figure — Prototype « signaler un incident » (espace locataire, mobile).*
 
@@ -538,6 +507,12 @@ Ce jeu s'inscrit dans un **harnais global de ~180 tests unitaires** :
 - **Règle d'équipe** : tout correctif de bogue est accompagné d'un test qui
   reproduit le bug (cf. `docs/plan-correction-bogues.md`), garantissant qu'il ne
   réapparaîtra pas.
+
+![Résultats de la CI (GitHub Actions) : lint, type-check et tests unitaires avec couverture.](images/tests-github.png)
+
+Chaque exécution est consultable dans l'onglet **Actions** du dépôt GitHub
+(<https://github.com/Dark4warrior/ResidenceConnect/actions>), avec le résumé de
+couverture publié dans le récapitulatif du job.
 
 ## 6. Exécution
 
@@ -939,8 +914,11 @@ Le tout avec **temps réel**, **journal d'audit** et **notifications**.
   - locataire : `tenant@residenceconnect.dev`
   - technicien : `technicien@residenceconnect.dev`
   - mot de passe : `Demo1234!`
-- **Application mobile** : lançable via Expo Go (`pnpm --filter
-  @residenceconnect/mobile dev`) ou distribuée en APK via EAS.
+- **Application mobile (APK Android)** : installable directement sur un appareil
+  Android via le build EAS —
+  <https://expo.dev/accounts/dark4warrior/projects/residenceconnect/builds/0f1691ff-c457-42d9-9f9e-66a0040c6684>
+  (ouvrir le lien sur l'appareil ou scanner le QR code). Également lançable via
+  Expo Go (`pnpm --filter @residenceconnect/mobile dev`).
 
 ## 6. Vérifier le code
 
@@ -960,7 +938,7 @@ déploiement (`docs/manuel-deploiement.md`).
 
 Le cahier de recettes recense **32 scénarios** de recette fonctionnelle (`CR-<DOMAINE>-NN`) avec leurs **résultats attendus**, afin de détecter anomalies et régressions. Le détail (préconditions et étapes de chaque scénario) figure dans `docs/cahier-de-recettes.md` ; ci-dessous la synthèse et la campagne exécutée.
 
-**Environnement** : web (`localhost:5173` / déployé sur Vercel), mobile (Expo Go), Supabase (migrations 001→007 + seed). Comptes de démonstration : voir page de garde. Statuts : ✅ conforme · ❌ non conforme · ⏳ à exécuter.
+**Environnement** : web (`localhost:5173` / déployé sur Vercel), mobile (Expo Go), Supabase (migrations 001→007 + seed). Comptes de démonstration : voir page de garde.
 
 ## Scénarios et résultats attendus
 
@@ -1027,16 +1005,16 @@ Le cahier de recettes recense **32 scénarios** de recette fonctionnelle (`CR-<D
 
 | Scénario | Statut | Résultat obtenu |
 | --- | --- | --- |
-| CR-GES-01 | ✅ | 6 signalements, colonnes et tri corrects |
-| CR-GES-02 | ✅ | Recherche « ascenseur » → 1 ; filtres OK |
-| CR-GES-03 | ✅ | Tous 6 / Non attribués 2 / Attribués 4 |
-| CR-GES-04 | ✅ | Détail complet |
-| CR-GES-05 | ✅ | Assignation reflétée dans « Assigné à » |
-| CR-GES-06 | ✅ | Retour à « Non assigné » |
-| CR-GES-07 | ✅ | Statut + historique horodaté (valide CR-TR-02) |
-| CR-GES-08 | ✅ | « Agrégation SQL », 4 KPIs, 3 répartitions |
-| CR-GES-09 | ✅ | Export activé/désactivé selon résultats (+13 tests CSV) |
-| CR-GES-10 | ✅ | Champs pré-remplis, e-mail en lecture seule |
+| CR-GES-01 | Conforme | 6 signalements, colonnes et tri corrects |
+| CR-GES-02 | Conforme | Recherche « ascenseur » → 1 ; filtres OK |
+| CR-GES-03 | Conforme | Tous 6 / Non attribués 2 / Attribués 4 |
+| CR-GES-04 | Conforme | Détail complet |
+| CR-GES-05 | Conforme | Assignation reflétée dans « Assigné à » |
+| CR-GES-06 | Conforme | Retour à « Non assigné » |
+| CR-GES-07 | Conforme | Statut + historique horodaté (valide CR-TR-02) |
+| CR-GES-08 | Conforme | « Agrégation SQL », 4 KPIs, 3 répartitions |
+| CR-GES-09 | Conforme | Export activé/désactivé selon résultats (+13 tests CSV) |
+| CR-GES-10 | Conforme | Champs pré-remplis, e-mail en lecture seule |
 
 **RLS** (CR-SEC-01→03) : automatisé par `scripts/test-rls.sh` (15 assertions). **Mobile** (CR-LOC, CR-TEC) : validé sur appareil. **Synthèse : 24/32 validés, 0 anomalie.** Toute anomalie future est traitée selon le plan de correction des bogues (section 13).
 
@@ -1379,29 +1357,33 @@ migration déjà publiée) — cf. `docs/plan-correction-bogues.md`.
 
 ## Espace locataire (mobile)
 
-<img src="images/signalement-tenant.png" alt="Liste des signalements du locataire" width="210" /> <img src="images/detail-signalement.png" alt="Détail d'un signalement" width="210" />
+<p align="center"><img src="images/signalement-tenant.png" alt="Liste des signalements du locataire" width="200" /> &nbsp; <img src="images/detail-signalement.png" alt="Détail d'un signalement" width="200" /></p>
 
-*Suivi de ses signalements et détail avec frise d'avancement.*
+*Liste de ses signalements, et détail avec frise d'avancement.*
 
 ## Espace gestionnaire (web)
 
-<img src="images/web-acceuil.png" alt="Tableau de bord" width="500" />
+<p align="center"><img src="images/web-acceuil.png" alt="Tableau de bord des signalements" width="560" /></p>
 
 *Tableau de bord : liste filtrable des signalements.*
 
-<img src="images/web-analitics.png" alt="Analytics" width="500" /> <img src="images/manager-detail-mission.png" alt="Détail gestionnaire" width="500" />
+<p align="center"><img src="images/web-analitics.png" alt="Page d'analyse" width="560" /></p>
 
-*Analytics (indicateurs, répartitions) et détail d'un signalement (statut, assignation, historique).*
+*Analyse : indicateurs clés et répartitions.*
 
 ## Espace technicien (mobile)
 
-<img src="images/technicien-acceuil.png" alt="Missions du technicien" width="210" /> <img src="images/technicien-detail-mission.png" alt="Détail d'une mission" width="210" />
+<p align="center"><img src="images/technicien-acceuil.png" alt="Missions du technicien" width="200" /> &nbsp; <img src="images/technicien-detail-mission.png" alt="Détail d'une mission" width="200" /></p>
 
-*Missions assignées et mise à jour du statut sur le terrain.*
+*Missions assignées, et mise à jour du statut sur le terrain.*
 
 ---
 
 # Conclusion
 
-ResidenceConnect est un logiciel **fonctionnel, fiable et viable** (v1.0.0), développé selon des pratiques d'ingénierie éprouvées : architecture maintenable, sécurité appliquée en base et couvrant l'OWASP Top 10, accessibilité conforme, harnais de tests et CI/CD. L'ensemble est **vérifiable dans le dépôt** et **manipulable en ligne**, et les quatre compétences éliminatoires (C2.2.1, C2.2.2, C2.2.3, C2.3.1) sont couvertes par du code et de la documentation dédiés.
+ResidenceConnect répond au besoin de départ : un locataire signale un incident, un gestionnaire le suit et l'attribue, un technicien le traite — sur mobile et sur le web. La version 1.0.0 est en ligne (dashboard déployé, base Supabase active) et les principaux parcours ont été recettés sans anomalie.
+
+Les partis pris techniques — cloisonnement des données en base plutôt que côté client, tests automatisés vérifiés par l'intégration continue, prise en compte de l'accessibilité, documentation versionnée — ont été guidés par deux objectifs : la maintenabilité et la fiabilité dans le temps.
+
+Plusieurs points restent ouverts et constituent les prochaines évolutions : le mode sombre, un contrôle d'accessibilité automatisé intégré à la CI, et la distribution de l'application mobile (APK / stores). Ce projet m'a permis de mettre en œuvre, sur un cas concret, l'ensemble de la chaîne de conception, de développement et de mise en production d'une application.
 

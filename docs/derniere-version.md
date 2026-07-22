@@ -50,8 +50,11 @@ Le tout avec **temps réel**, **journal d'audit** et **notifications**.
   - locataire : `tenant@residenceconnect.dev`
   - technicien : `technicien@residenceconnect.dev`
   - mot de passe : `Demo1234!`
-- **Application mobile** : lançable via Expo Go (`pnpm --filter
-  @residenceconnect/mobile dev`) ou distribuée en APK via EAS.
+- **Application mobile (APK Android)** : installable directement sur un appareil
+  Android via le build EAS —
+  <https://expo.dev/accounts/dark4warrior/projects/residenceconnect/builds/0f1691ff-c457-42d9-9f9e-66a0040c6684>
+  (ouvrir le lien sur l'appareil ou scanner le QR code). Également lançable via
+  Expo Go (`pnpm --filter @residenceconnect/mobile dev`).
 
 ## 6. Vérifier le code
 

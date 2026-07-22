@@ -35,40 +35,14 @@ graph TB
 
 Les unités déployables et leurs communications.
 
-```mermaid
-graph TB
-    subgraph Clients
-        mobile["App mobile<br/>(React Native + Expo)"]
-        web["Dashboard web<br/>(React + Vite)"]
-    end
+![Diagramme des conteneurs : les applications mobile et web s'adressent au backend Supabase (Auth JWT, PostgreSQL + RLS, Storage, Realtime, Edge Functions), qui déclenche les notifications Expo Push.](images/architecture-conteneurs.svg)
 
-    shared["packages/shared<br/>(types & constantes TS)"]
-
-    subgraph Supabase
-        auth["Auth<br/>(JWT / Magic Link)"]
-        db[("PostgreSQL<br/>+ RLS")]
-        storage["Storage<br/>(photos tickets)"]
-        realtime["Realtime<br/>(WebSocket)"]
-        edge["Edge Functions<br/>(Deno) — à venir"]
-    end
-
-    mobile --> shared
-    web --> shared
-
-    mobile -->|supabase-js| auth
-    mobile -->|SELECT/INSERT/UPDATE| db
-    mobile -->|upload| storage
-    mobile -->|subscribe| realtime
-    web -->|supabase-js| auth
-    web -->|SELECT/UPDATE| db
-
-    db -->|change events| realtime
-    edge -->|service_role| db
-    edge --> expo[(Expo Push)]
-```
-
-Chaque client dépend de `packages/shared` pour garantir des types identiques
-de bout en bout (statuts, catégories, niveaux d'urgence, entités).
+Les deux clients communiquent avec Supabase via **supabase-js** (authentification,
+requêtes soumises à la RLS, upload de photos, abonnement temps réel). Ils
+partagent le paquet **`packages/shared`** (types et constantes TypeScript), ce qui
+garantit des types identiques de bout en bout (statuts, catégories, niveaux
+d'urgence, entités). Les **Edge Functions** déclenchent les notifications via
+**Expo Push**.
 
 ## 3. Composants (niveau 3) — App mobile
 
