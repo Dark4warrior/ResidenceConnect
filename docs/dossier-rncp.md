@@ -47,6 +47,8 @@ lang: fr
 15. Le manuel d'utilisation
 16. Le manuel de mise à jour
 
+*Annexe A — Captures d'écran des trois espaces.*
+
 ---
 
 # Correspondance des compétences
@@ -110,6 +112,36 @@ non conforme **ne peut pas être fusionnée** (filet anti-régression).
 vérité), design system mobile en tokens, séparation UI / logique (hooks) /
 accès données. Architecture documentée en modèle C4 (Mermaid).
 
+```mermaid
+graph TB
+    subgraph Clients
+        mobile["App mobile<br/>(React Native + Expo)"]
+        web["Dashboard web<br/>(React + Vite)"]
+    end
+    shared["packages/shared<br/>(types & constantes TS)"]
+    subgraph Supabase
+        auth["Auth<br/>(JWT)"]
+        db[("PostgreSQL<br/>+ RLS")]
+        storage["Storage<br/>(photos)"]
+        realtime["Realtime<br/>(WebSocket)"]
+        edge["Edge Functions<br/>(Deno)"]
+    end
+    mobile --> shared
+    web --> shared
+    mobile -->|supabase-js| auth
+    mobile -->|SELECT/INSERT/UPDATE| db
+    mobile -->|upload| storage
+    mobile -->|subscribe| realtime
+    web -->|supabase-js| auth
+    web -->|SELECT/UPDATE| db
+    db -->|change events| realtime
+    edge -->|service_role| db
+    edge --> expo[(Expo Push)]
+```
+
+*Figure — Vue « conteneurs » (C4) : deux clients, un paquet partagé, un backend
+Supabase.*
+
 → Détail : **`docs/architecture.md`**.
 
 # 5. Présentation d'un prototype (C2.2.1)
@@ -121,6 +153,11 @@ intégrée dès le prototype** : création au nom de l'utilisateur authentifié,
 cloisonnement RLS, photos en bucket privé. Équipements ciblés justifiés :
 **mobile** pour locataire/technicien (terrain), **web** pour le gestionnaire
 (poste de travail).
+
+<img src="images/nouveau-signalement.png" alt="Écran de création d'un signalement, espace locataire (mobile)" width="280" />
+
+*Figure — Prototype « signaler un incident » : saisie guidée par cartes
+(catégorie, urgence), photos et cibles tactiles confortables.*
 
 → Détail : **`docs/prototype.md`** · Maquette : `design-mockups/index.html`.
 
@@ -178,7 +215,8 @@ Traçabilité à trois niveaux : commits conventionnels, pull requests, tags.
 **~180 tests verts**, CI bloquante, cahier de recettes exécuté (0 anomalie),
 sécurité vérifiée. Le dashboard web est **déployé et manipulable en autonomie**
 par le jury (URL Vercel + comptes de démonstration en page de garde) ; il est
-aussi clonable et lançable en suivant le manuel de déploiement.
+aussi clonable et lançable en suivant le manuel de déploiement. Aperçu des trois
+espaces en **Annexe A**.
 
 → Détail : **`docs/derniere-version.md`**.
 
@@ -222,6 +260,36 @@ Flux de branches, application des nouvelles migrations, procédure de release
 et procédure de **rollback**.
 
 → Détail : **`docs/manuel-mise-a-jour.md`**.
+
+---
+
+# Annexe A — Captures d'écran
+
+## Espace locataire (mobile)
+
+<img src="images/signalement-tenant.png" alt="Liste des signalements du locataire" width="250" /> <img src="images/detail-signalement.png" alt="Détail et suivi d'un signalement" width="250" />
+
+*Suivi de ses signalements et détail avec frise d'avancement.*
+
+## Espace gestionnaire (web)
+
+<img src="images/web-acceuil.png" alt="Tableau de bord des signalements" width="640" />
+
+*Tableau de bord : liste filtrable des signalements.*
+
+<img src="images/web-analitics.png" alt="Page analytics" width="640" />
+
+*Analytics : indicateurs clés et répartitions.*
+
+<img src="images/manager-detail-mission.png" alt="Détail d'un signalement côté gestionnaire" width="640" />
+
+*Détail d'un signalement : statut, assignation et historique.*
+
+## Espace technicien (mobile)
+
+<img src="images/technicien-acceuil.png" alt="Liste des missions du technicien" width="250" /> <img src="images/technicien-detail-mission.png" alt="Détail d'une mission technicien" width="250" />
+
+*Missions assignées et mise à jour du statut sur le terrain.*
 
 ---
 
