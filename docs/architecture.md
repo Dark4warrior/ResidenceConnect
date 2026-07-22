@@ -36,35 +36,32 @@ graph TB
 Les unités déployables et leurs communications.
 
 ```mermaid
-graph TB
+flowchart TB
     subgraph Clients
-        mobile["App mobile<br/>(React Native + Expo)"]
-        web["Dashboard web<br/>(React + Vite)"]
+        mobile["App mobile<br/>(React Native / Expo)"]
+        web["Dashboard web<br/>(React / Vite)"]
     end
 
     shared["packages/shared<br/>(types & constantes TS)"]
 
-    subgraph Supabase
-        auth["Auth<br/>(JWT / Magic Link)"]
-        db[("PostgreSQL<br/>+ RLS")]
-        storage["Storage<br/>(photos tickets)"]
-        realtime["Realtime<br/>(WebSocket)"]
-        edge["Edge Functions<br/>(Deno) — à venir"]
+    subgraph Supabase["Backend — Supabase"]
+        auth["Auth (JWT)"]
+        db[("PostgreSQL + RLS")]
+        storage["Storage (photos)"]
+        realtime["Realtime"]
+        edge["Edge Functions (Deno)"]
     end
 
-    mobile --> shared
-    web --> shared
+    push[(Expo Push)]
 
-    mobile -->|supabase-js| auth
-    mobile -->|SELECT/INSERT/UPDATE| db
+    Clients --> shared
+    Clients -->|supabase-js| auth
+    Clients -->|requêtes SQL| db
     mobile -->|upload| storage
     mobile -->|subscribe| realtime
-    web -->|supabase-js| auth
-    web -->|SELECT/UPDATE| db
-
     db -->|change events| realtime
     edge -->|service_role| db
-    edge --> expo[(Expo Push)]
+    edge --> push
 ```
 
 Chaque client dépend de `packages/shared` pour garantir des types identiques
