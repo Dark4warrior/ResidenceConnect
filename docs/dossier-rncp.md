@@ -1,7 +1,7 @@
 ---
 title: "ResidenceConnect — Dossier de projet"
 subtitle: "Expert en développement logiciel — RNCP 39583 (niveau 7), Ynov Lyon"
-author: "[Nom Prénom]"
+author: "Gilchrist Steven LALEYE"
 date: "2026-07-21"
 lang: fr
 ---
@@ -13,8 +13,13 @@ lang: fr
 
 - **Titre visé** : Expert en développement logiciel — **RNCP 39583** (niveau 7).
 - **École** : Ynov Lyon.
-- **Candidat** : [Nom Prénom].
-- **Dépôt** : `Dark4warrior/ResidenceConnect` (branche `main`, version **v1.0.0**).
+- **Candidat** : Gilchrist Steven LALEYE.
+- **Code source (dépôt GitHub)** : <https://github.com/Dark4warrior/ResidenceConnect>
+  (branche `main`, version **v1.0.0**).
+- **Application web déployée** : _(URL Vercel à renseigner après déploiement)_.
+- **Comptes de démonstration** — gestionnaire : `manager@residenceconnect.dev` ·
+  locataire : `tenant@residenceconnect.dev` · technicien :
+  `technicien@residenceconnect.dev` — mot de passe `Demo1234!`.
 - **Date** : 21/07/2026.
 
 > Ce dossier est une **synthèse**. Chaque section renvoie à la **documentation
@@ -143,7 +148,8 @@ Authentification **JWT** (Supabase Auth, secure-store mobile) ; **RLS sur 8/8
 tables** (cloisonnement par rôle **en base**) ; fonctions **`SECURITY DEFINER`** ;
 **bucket Storage privé** + URL signées ; **journal d'audit immuable** ; secrets
 en `.env` non versionnés + secrets CI ; vérification par **`scripts/test-rls.sh`**
-(15 assertions).
+(15 assertions). Ces mesures **couvrent l'OWASP Top 10** (tableau de
+correspondance détaillé dans la doc).
 
 → Détail : **`docs/securite.md`**.
 
@@ -170,7 +176,9 @@ Traçabilité à trois niveaux : commits conventionnels, pull requests, tags.
 
 **v1.0.0** sur `main` : trois parcours métier opérationnels de bout en bout,
 **~180 tests verts**, CI bloquante, cahier de recettes exécuté (0 anomalie),
-sécurité vérifiée. Clonable et lançable en suivant le manuel de déploiement.
+sécurité vérifiée. Le dashboard web est **déployé et manipulable en autonomie**
+par le jury (URL Vercel + comptes de démonstration en page de garde) ; il est
+aussi clonable et lançable en suivant le manuel de déploiement.
 
 → Détail : **`docs/derniere-version.md`**.
 
