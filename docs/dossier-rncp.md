@@ -13,7 +13,7 @@ Application de gestion d'incidents en résidence (bailleur social) : un locatair
 
 **Application web déployée** : <https://residence-connect-web.vercel.app>
 
-**Application mobile (APK Android)** : <https://expo.dev/accounts/dark4warrior/projects/residenceconnect/builds/0f1691ff-c457-42d9-9f9e-66a0040c6684>
+**Application mobile (APK Android)** : à télécharger depuis la release GitHub — <https://github.com/Dark4warrior/ResidenceConnect/releases/tag/v1.0.0> (fichier `ResidenceConnect-v1.0.0.apk`)
 
 **Comptes de démonstration** : gestionnaire `manager@residenceconnect.dev`, locataire `tenant@residenceconnect.dev`, technicien `technicien@residenceconnect.dev` — mot de passe `Demo1234!`
 
@@ -914,11 +914,12 @@ Le tout avec **temps réel**, **journal d'audit** et **notifications**.
   - locataire : `tenant@residenceconnect.dev`
   - technicien : `technicien@residenceconnect.dev`
   - mot de passe : `Demo1234!`
-- **Application mobile (APK Android)** : installable directement sur un appareil
-  Android via le build EAS —
-  <https://expo.dev/accounts/dark4warrior/projects/residenceconnect/builds/0f1691ff-c457-42d9-9f9e-66a0040c6684>
-  (ouvrir le lien sur l'appareil ou scanner le QR code). Également lançable via
-  Expo Go (`pnpm --filter @residenceconnect/mobile dev`).
+- **Application mobile (APK Android)** : le fichier `ResidenceConnect-v1.0.0.apk`
+  est attaché à la **release GitHub v1.0.0** (lien permanent) —
+  <https://github.com/Dark4warrior/ResidenceConnect/releases/tag/v1.0.0>.
+  Installation : depuis un appareil **Android**, télécharger le `.apk`, autoriser
+  l'installation depuis une source inconnue, puis l'ouvrir. L'application est
+  aussi lançable via **Expo Go** (`pnpm --filter @residenceconnect/mobile dev`).
 
 ## 6. Vérifier le code
 
