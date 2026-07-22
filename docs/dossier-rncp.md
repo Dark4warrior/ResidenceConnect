@@ -1,9 +1,7 @@
----
-title: "ResidenceConnect — Dossier de projet"
-subtitle: "Expert en développement logiciel — RNCP 39583 (niveau 7), Ynov Lyon"
-author: "Gilchrist Steven LALEYE"
-date: "2026-07-21"
-lang: fr
+# ResidenceConnect — Dossier de projet
+
+**Expert en développement logiciel — RNCP 39583 (niveau 7) · Ynov Lyon**
+
 ---
 
 # Page de garde
