@@ -139,6 +139,8 @@ La supervision est **automatisée et versionnée dans le dépôt** :
   manuel (`workflow_dispatch`). GitHub Actions est gratuit et illimité sur un
   dépôt public.
 
+![Flux de supervision : la planification déclenche les sondes ; selon les seuils, soit les services sont disponibles, soit une alerte fait échouer le workflow et déclenche une notification e-mail et l'ouverture d'une issue.](images/supervision-flux.svg)
+
 ## 4. Seuils d'alerte
 
 Une sonde passe en **ALERTE** dès qu'un de ces seuils est franchi :
@@ -250,11 +252,9 @@ et de la corriger** :
 
 ### 1.4 Cycle de traitement
 
-```
-Détection → Issue (consignation) → Qualification (sévérité)
-  → Branche fix/* → Correctif (+ test de non-régression)
-  → Pull request (CI verte) → Intégration develop → Release main → Déploiement
-```
+De la détection au rétablissement, chaque anomalie suit le même cycle :
+
+![Cycle de vie d'une anomalie : détection, consignation en issue, qualification, correction sur une branche avec test de non-régression, validation par pull request (CI verte), déploiement continu, puis vérification du rétablissement.](images/anomalie-cycle.svg)
 
 Ce processus est détaillé dans le plan de correction des bogues
 (`docs/plan-correction-bogues.md`).

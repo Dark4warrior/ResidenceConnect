@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 620" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="b" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <!-- 7 étapes -->
+  <g font-size="13" fill="#0f172a" text-anchor="middle">
+    <rect x="45" y="16"  width="380" height="56" rx="8" fill="#eef2ff" stroke="#3b82f6" stroke-width="1.4"/>
+    <text x="235" y="40">1. Détection</text>
+    <text x="235" y="58" font-size="11.5" fill="#475569">supervision · CI · retour utilisateur</text>
+
+    <rect x="45" y="100" width="380" height="56" rx="8" fill="#eef2ff" stroke="#3b82f6" stroke-width="1.4"/>
+    <text x="235" y="124">2. Consignation</text>
+    <text x="235" y="142" font-size="11.5" fill="#475569">issue GitHub (fiche : repro, cause, préconisation)</text>
+
+    <rect x="45" y="184" width="380" height="46" rx="8" fill="#fff7ed" stroke="#f59e0b" stroke-width="1.4"/>
+    <text x="235" y="212">3. Qualification (sévérité, priorité)</text>
+
+    <rect x="45" y="258" width="380" height="56" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="235" y="282">4. Correction</text>
+    <text x="235" y="300" font-size="11.5" fill="#475569">branche fix/* + test de non-régression</text>
+
+    <rect x="45" y="342" width="380" height="56" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="235" y="366">5. Validation</text>
+    <text x="235" y="384" font-size="11.5" fill="#475569">pull request — CI verte (lint, typage, tests)</text>
+
+    <rect x="45" y="426" width="380" height="56" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+    <text x="235" y="450">6. Déploiement</text>
+    <text x="235" y="468" font-size="11.5" fill="#475569">release develop → main (déploiement continu)</text>
+
+    <rect x="45" y="510" width="380" height="56" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+    <text x="235" y="534" fill="#065f46">7. Vérification</text>
+    <text x="235" y="552" font-size="11.5" fill="#047857">service rétabli et contrôlé</text>
+  </g>
+
+  <!-- arrows -->
+  <g stroke="#475569" stroke-width="1.5" marker-end="url(#b)">
+    <line x1="235" y1="72"  x2="235" y2="96"/>
+    <line x1="235" y1="156" x2="235" y2="180"/>
+    <line x1="235" y1="230" x2="235" y2="254"/>
+    <line x1="235" y1="314" x2="235" y2="338"/>
+    <line x1="235" y1="398" x2="235" y2="422"/>
+    <line x1="235" y1="482" x2="235" y2="506"/>
+  </g>
+</svg>

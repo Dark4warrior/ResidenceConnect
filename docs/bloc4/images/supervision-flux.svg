@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <!-- 1. Planification -->
+  <rect x="200" y="20" width="320" height="52" rx="8" fill="#eef2ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="360" y="43" font-size="14" fill="#0f172a" text-anchor="middle">Planification</text>
+  <text x="360" y="61" font-size="12" fill="#475569" text-anchor="middle">cron toutes les 30 min (+ déclenchement manuel)</text>
+
+  <!-- 2. Sondes -->
+  <rect x="175" y="110" width="370" height="60" rx="8" fill="#eef2ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="360" y="134" font-size="14" fill="#0f172a" text-anchor="middle">Sondes de disponibilité (healthcheck.mjs)</text>
+  <text x="360" y="154" font-size="12" fill="#475569" text-anchor="middle">Dashboard web (/login) · API Supabase (/auth)</text>
+
+  <!-- 3. Seuils -->
+  <rect x="205" y="210" width="310" height="60" rx="8" fill="#fff7ed" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="360" y="234" font-size="14" fill="#0f172a" text-anchor="middle">Évaluation des seuils</text>
+  <text x="360" y="254" font-size="12" fill="#475569" text-anchor="middle">HTTP 200 · latence &lt; 3 s · timeout 10 s</text>
+
+  <!-- 4a. OK -->
+  <rect x="55" y="340" width="240" height="54" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="175" y="365" font-size="13" fill="#065f46" text-anchor="middle">Services disponibles</text>
+  <text x="175" y="383" font-size="12" fill="#047857" text-anchor="middle">(aucune action)</text>
+
+  <!-- 4b. Alerte -->
+  <rect x="420" y="340" width="245" height="54" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="1.6"/>
+  <text x="542" y="365" font-size="13" fill="#991b1b" text-anchor="middle">Alerte : workflow en échec</text>
+  <text x="542" y="383" font-size="12" fill="#b91c1c" text-anchor="middle">(seuil dépassé / injoignable)</text>
+
+  <!-- 5a. e-mail -->
+  <rect x="360" y="470" width="150" height="54" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
+  <text x="435" y="495" font-size="12.5" fill="#0f172a" text-anchor="middle">Notification</text>
+  <text x="435" y="512" font-size="12" fill="#475569" text-anchor="middle">e-mail GitHub</text>
+
+  <!-- 5b. issue -->
+  <rect x="530" y="470" width="160" height="54" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
+  <text x="610" y="495" font-size="12.5" fill="#0f172a" text-anchor="middle">Issue « supervision »</text>
+  <text x="610" y="512" font-size="12" fill="#475569" text-anchor="middle">(ouverte automatiquement)</text>
+
+  <!-- arrows -->
+  <line x1="360" y1="72"  x2="360" y2="106" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="360" y1="170" x2="360" y2="206" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+  <!-- branch to OK -->
+  <path d="M300,270 C230,300 190,310 175,336" fill="none" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="205" y="312" font-size="12" fill="#059669" text-anchor="middle">OK</text>
+  <!-- branch to Alerte -->
+  <path d="M420,270 C490,300 528,310 542,336" fill="none" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="512" y="312" font-size="12" fill="#dc2626" text-anchor="middle">Dépassé</text>
+  <!-- alerte to signalements -->
+  <path d="M520,394 C490,430 460,440 445,466" fill="none" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+  <path d="M565,394 C590,430 600,440 610,466" fill="none" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+</svg>
