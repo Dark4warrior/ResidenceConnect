@@ -1,0 +1,46 @@
+name: Supervision
+
+# Sonde de disponibilité exécutée périodiquement (et manuellement) : vérifie que
+# le dashboard web et l'API Supabase répondent dans les seuils. En cas d'échec,
+# le workflow échoue (notification GitHub à l'auteur) et une issue de
+# signalement est ouverte automatiquement.
+on:
+  schedule:
+    - cron: '*/30 * * * *' # toutes les 30 minutes
+  workflow_dispatch: {}
+
+# Évite les exécutions concurrentes de la supervision.
+concurrency:
+  group: monitoring
+  cancel-in-progress: false
+
+jobs:
+  healthcheck:
+    name: Sondes de disponibilité
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write # nécessaire pour ouvrir une issue de signalement
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Exécution des sondes
+        run: node scripts/healthcheck.mjs
+
+      - name: Signalement (issue) en cas d'indisponibilité
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create supervision --color b60205 --description "Alertes de supervision" 2>/dev/null || true
+          gh issue create \
+            --title "Supervision : indisponibilité détectée le $(date -u '+%Y-%m-%d %H:%M UTC')" \
+            --label supervision \
+            --body "Une ou plusieurs sondes de supervision ont dépassé les seuils lors de l'exécution planifiée. Logs des sondes : $RUN_URL — Action attendue : vérifier la disponibilité du service concerné (dashboard web Vercel / projet Supabase) et rétablir le service." \
+            || true
