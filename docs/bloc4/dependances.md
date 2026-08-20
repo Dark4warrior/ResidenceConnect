@@ -48,6 +48,19 @@ Le processus est **semi-automatique**, pour concilier fraîcheur et maîtrise :
 - Les alertes de sécurité GitHub (Dependabot security) sont traitées **en
   priorité** (cf. `docs/plan-correction-bogues.md`).
 
+### Exemple réel d'évaluation d'impact
+
+À sa première exécution, Dependabot a ouvert une dizaine de *pull requests*
+(cf. **Annexe A**). Elles ont été triées selon leur impact :
+
+- **Acceptées** — les mises à jour **mineures et correctives** (regroupées en une
+  PR), à faible risque, validées par la CI.
+- **Écartées / reportées** — les montées **majeures** susceptibles de casser
+  l'application : par exemple le passage d'**Expo 54 → 57** (incompatible avec la
+  contrainte Expo Go du projet) ou de **TypeScript 5 → 7**. Ces PR sont
+  **refusées** en connaissance de cause, illustrant l'**évaluation des impacts**
+  avant toute intégration.
+
 ## 5. Synthèse
 
 | Critère | Valeur |

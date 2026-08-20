@@ -89,6 +89,19 @@ Le processus est **semi-automatique**, pour concilier fraîcheur et maîtrise :
 - Les alertes de sécurité GitHub (Dependabot security) sont traitées **en
   priorité** (cf. `docs/plan-correction-bogues.md`).
 
+### Exemple réel d'évaluation d'impact
+
+À sa première exécution, Dependabot a ouvert une dizaine de *pull requests*
+(cf. **Annexe A**). Elles ont été triées selon leur impact :
+
+- **Acceptées** — les mises à jour **mineures et correctives** (regroupées en une
+  PR), à faible risque, validées par la CI.
+- **Écartées / reportées** — les montées **majeures** susceptibles de casser
+  l'application : par exemple le passage d'**Expo 54 → 57** (incompatible avec la
+  contrainte Expo Go du projet) ou de **TypeScript 5 → 7**. Ces PR sont
+  **refusées** en connaissance de cause, illustrant l'**évaluation des impacts**
+  avant toute intégration.
+
 ## 5. Synthèse
 
 | Critère | Valeur |
@@ -140,6 +153,26 @@ La supervision est **automatisée et versionnée dans le dépôt** :
   dépôt public.
 
 ![Flux de supervision : la planification déclenche les sondes ; selon les seuils, soit les services sont disponibles, soit une alerte fait échouer le workflow et déclenche une notification e-mail et l'ouverture d'une issue.](images/supervision-flux.svg)
+
+Extrait de la définition des sondes (`scripts/healthcheck.mjs`) — chaque sonde a
+son URL, son critère de disponibilité et la mesure de latence :
+
+```js
+const probes = [
+  { name: 'Dashboard web (Vercel)', url: `${WEB_URL}/login`, okStatus: (s) => s === 200 },
+  { name: 'API backend (Supabase Auth)', url: `${SUPABASE_URL}/auth/v1/settings`,
+    headers: { apikey: SUPABASE_ANON_KEY }, okStatus: (s) => s === 200 },
+];
+```
+
+Extrait de la planification (`.github/workflows/monitoring.yml`) :
+
+```yaml
+on:
+  schedule:
+    - cron: '*/30 * * * *' # toutes les 30 minutes
+  workflow_dispatch: {}
+```
 
 ## 4. Seuils d'alerte
 
@@ -425,6 +458,28 @@ La documentation de déploiement précise désormais **explicitement** les deux
 variables requises (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) et un
 `.env.example` sert de modèle, afin d'éviter qu'une variable soit oubliée lors
 d'un futur déploiement.
+
+---
+
+# Annexe A — Preuves (captures)
+
+## Supervision en fonctionnement
+
+<p align="center"><img src="images/actions-supervision.png" alt="Run du workflow de supervision (GitHub Actions), sondes OK" width="580" /></p>
+
+*Exécution planifiée du workflow de supervision (GitHub Actions) : les sondes répondent, les services sont disponibles.*
+
+## Mises à jour de dépendances automatisées
+
+<p align="center"><img src="images/dependabot-prs.png" alt="Pull requests ouvertes par Dependabot" width="580" /></p>
+
+*Dependabot ouvre automatiquement les pull requests de mise à jour des dépendances (npm et actions GitHub), que la CI valide avant fusion.*
+
+## Journal des versions déployées
+
+<p align="center"><img src="images/releases.png" alt="Page des releases GitHub, v1.0.0 et v1.0.1" width="580" /></p>
+
+*Releases GitHub : les versions déployées (v1.0.0 puis la version de maintenance v1.0.1) et leurs livrables.*
 
 ---
 

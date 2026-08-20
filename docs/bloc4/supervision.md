@@ -44,6 +44,26 @@ La supervision est **automatisée et versionnée dans le dépôt** :
 
 ![Flux de supervision : la planification déclenche les sondes ; selon les seuils, soit les services sont disponibles, soit une alerte fait échouer le workflow et déclenche une notification e-mail et l'ouverture d'une issue.](images/supervision-flux.svg)
 
+Extrait de la définition des sondes (`scripts/healthcheck.mjs`) — chaque sonde a
+son URL, son critère de disponibilité et la mesure de latence :
+
+```js
+const probes = [
+  { name: 'Dashboard web (Vercel)', url: `${WEB_URL}/login`, okStatus: (s) => s === 200 },
+  { name: 'API backend (Supabase Auth)', url: `${SUPABASE_URL}/auth/v1/settings`,
+    headers: { apikey: SUPABASE_ANON_KEY }, okStatus: (s) => s === 200 },
+];
+```
+
+Extrait de la planification (`.github/workflows/monitoring.yml`) :
+
+```yaml
+on:
+  schedule:
+    - cron: '*/30 * * * *' # toutes les 30 minutes
+  workflow_dispatch: {}
+```
+
 ## 4. Seuils d'alerte
 
 Une sonde passe en **ALERTE** dès qu'un de ces seuils est franchi :
