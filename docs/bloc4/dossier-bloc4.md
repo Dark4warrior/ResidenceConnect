@@ -26,11 +26,33 @@ développée pendant ma formation : la **supervision** en production, le
 
 # Sommaire
 
-1. La description du processus de mise à jour des dépendances
-2. La description du système de supervision
-3. La gestion des anomalies : consignation, fiche et traitement
-4. Un exemplaire du journal des versions déployées
-5. La maintenance : recommandations d'amélioration et support client
+**Présentation de l'application ResidenceConnect**
+
+**1. Mise à jour des dépendances**
+
+- Périmètre, fréquence et type de mise à jour
+- Évaluation de l'impact (exemple Dependabot)
+
+**2. Système de supervision et d'alerte**
+
+- Périmètre, indicateurs et sondes
+- Seuils, modalité de signalement et réaction à une alerte
+- Exécution et détection réelle d'une indisponibilité
+
+**3. Gestion des anomalies**
+
+- Processus de collecte, consignation et classification
+- Fiche d'une anomalie réelle et son traitement
+- Deuxième anomalie : indisponibilité du backend
+
+**4. Journal des versions déployées**
+
+**5. Maintenance**
+
+- Recommandations d'amélioration argumentées
+- Problème résolu en collaboration avec le support client
+
+**Annexe A — Preuves (captures) · Conclusion**
 
 ---
 
@@ -453,6 +475,34 @@ Le correctif a suivi le **processus d'intégration et de déploiement continu** 
 - Pour les anomalies **de code**, la règle est d'accompagner tout correctif d'un
   **test de non-régression** reproduisant le bogue (cf.
   `docs/plan-correction-bogues.md`).
+
+## 4. Deuxième anomalie : indisponibilité du backend
+
+Cette seconde anomalie illustre le lien direct entre la **supervision**
+(section 2) et la gestion des anomalies : c'est la sonde qui l'a détectée, sans
+intervention humaine.
+
+| Champ | Contenu |
+| --- | --- |
+| **Titre** | Indisponibilité du backend en production |
+| **Date / environnement** | Août 2026 — **production** |
+| **Sévérité** | **Bloquante** (plus aucune connexion, sur le web comme sur le mobile) |
+| **Mode de détection** | **Automatique**, par la sonde de supervision : `API backend — INJOIGNABLE` |
+| **Description** | Les requêtes vers Supabase échouent : impossible de se connecter ou de charger les données, quelle que soit l'application. |
+| **Étapes de reproduction** | Ouvrir l'application déployée et tenter une connexion → échec ; la sonde de supervision renvoie une alerte. |
+| **Analyse (cause racine)** | Le projet Supabase (offre gratuite) se met **en pause** après une période d'inactivité ; le service ne répond plus. |
+| **Préconisation** | Réactiver le projet ; à terme, **fiabiliser le backend** (offre payante ou maintien en éveil) pour supprimer la cause. |
+
+**Traitement.** J'ai réactivé le projet Supabase depuis son tableau de bord ; les
+sondes de supervision sont repassées au vert dès l'exécution suivante, confirmant
+le rétablissement.
+
+Contrairement à la première anomalie, celle-ci **ne se corrige pas par du code**
+mais par une **action d'exploitation** et une **décision d'infrastructure**. C'est
+précisément ce qui la rend intéressante : elle montre qu'une partie de la
+maintenance en condition opérationnelle relève de l'environnement d'exécution, et
+elle alimente directement les **axes d'amélioration** présentés en section 5
+(fiabiliser le backend).
 
 ---
 
