@@ -39,6 +39,12 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           gh label create supervision --color b60205 --description "Alertes de supervision" 2>/dev/null || true
+          # Déduplication : n'ouvre pas de nouvelle issue si une alerte est déjà ouverte.
+          open=$(gh issue list --label supervision --state open --json number --jq 'length')
+          if [ "$open" -gt 0 ]; then
+            echo "Alerte de supervision déjà ouverte — pas de doublon."
+            exit 0
+          fi
           gh issue create \
             --title "Supervision : indisponibilité détectée le $(date -u '+%Y-%m-%d %H:%M UTC')" \
             --label supervision \
