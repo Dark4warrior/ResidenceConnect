@@ -67,22 +67,30 @@ qui **fait échouer le workflow**. Le signalement est alors double :
 
 Le signalement est ainsi **tracé** (issue) en plus d'être **poussé** (e-mail).
 
-## 6. Exemple réel de détection
+## 6. Exécution et vérification
 
-Lors d'une exécution des sondes, la supervision a **détecté une indisponibilité
-réelle** de l'API backend :
+**Exécution nominale** (services disponibles) — sortie d'un run réel du workflow :
 
 ```
-[OK]     Dashboard web (Vercel) — HTTP 200 en 656 ms
-[ALERTE] API backend (Supabase Auth) — INJOIGNABLE (fetch failed)
+Supervision ResidenceConnect — 2026-08-20T03:23:31Z
+[OK] Dashboard web (Vercel) — HTTP 200 en 116 ms
+[OK] API backend (Supabase Auth) — HTTP 200 en 703 ms
+Tous les services sont disponibles.
+```
 
+**Vérification de la chaîne d'alerte** — pour valider le signalement, la sonde a
+été exécutée contre une URL volontairement injoignable ; elle détecte bien
+l'anomalie et sort en erreur :
+
+```
+[ALERTE] Dashboard web (Vercel) — HTTP 404 en 153 ms
+[OK]     API backend (Supabase Auth) — HTTP 200 en 203 ms
 1 sonde(s) en alerte — signalement déclenché.
 ```
 
-Le projet Supabase (offre gratuite) s'était **mis en pause** après une période
-d'inactivité. La sonde a correctement remonté l'alerte, ce qui a permis
-d'identifier et de rétablir le service — illustrant le rôle du système de
-supervision.
+En exécution planifiée, ce second cas ferait **échouer le workflow** →
+notification GitHub à l'auteur **et** ouverture automatique d'une issue
+`supervision`.
 
 ## 7. Outils complémentaires
 
