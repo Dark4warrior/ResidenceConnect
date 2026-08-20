@@ -78,19 +78,24 @@ Supervision ResidenceConnect — 2026-08-20T03:23:31Z
 Tous les services sont disponibles.
 ```
 
-**Vérification de la chaîne d'alerte** — pour valider le signalement, la sonde a
-été exécutée contre une URL volontairement injoignable ; elle détecte bien
-l'anomalie et sort en erreur :
+**Détection réelle** — la sonde a effectivement remonté une indisponibilité du
+backend lorsque le projet Supabase (offre gratuite) s'était **mis en pause**
+après inactivité :
 
 ```
-[ALERTE] Dashboard web (Vercel) — HTTP 404 en 153 ms
-[OK]     API backend (Supabase Auth) — HTTP 200 en 203 ms
+[OK]     Dashboard web (Vercel) — HTTP 200 en 656 ms
+[ALERTE] API backend (Supabase Auth) — INJOIGNABLE (fetch failed)
 1 sonde(s) en alerte — signalement déclenché.
 ```
 
-En exécution planifiée, ce second cas ferait **échouer le workflow** →
-notification GitHub à l'auteur **et** ouverture automatique d'une issue
-`supervision`.
+Le service a ensuite été relancé, et les sondes suivantes sont repassées au vert
+— illustrant le cycle complet **détection → signalement → rétablissement**.
+
+**Vérification de la chaîne d'alerte** — le signalement a aussi été validé en
+exécutant la sonde contre une URL volontairement injoignable (HTTP 404 →
+`ALERTE`, sortie en erreur). En exécution planifiée, ce cas fait **échouer le
+workflow** → notification GitHub à l'auteur **et** ouverture automatique d'une
+issue `supervision`.
 
 ## 7. Outils complémentaires
 
