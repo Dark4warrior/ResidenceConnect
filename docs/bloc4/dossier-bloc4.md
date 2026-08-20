@@ -26,33 +26,20 @@ développée pendant ma formation : la **supervision** en production, le
 
 # Sommaire
 
-**Présentation de l'application ResidenceConnect**
-
-**1. Mise à jour des dépendances**
-
-- Périmètre, fréquence et type de mise à jour
-- Évaluation de l'impact (exemple Dependabot)
-
-**2. Système de supervision et d'alerte**
-
-- Périmètre, indicateurs et sondes
-- Seuils, modalité de signalement et réaction à une alerte
-- Exécution et détection réelle d'une indisponibilité
-
-**3. Gestion des anomalies**
-
-- Processus de collecte, consignation et classification
-- Fiche d'une anomalie réelle et son traitement
-- Deuxième anomalie : indisponibilité du backend
-
-**4. Journal des versions déployées**
-
-**5. Maintenance**
-
-- Recommandations d'amélioration argumentées
-- Problème résolu en collaboration avec le support client
-
-**Annexe A — Preuves (captures) · Conclusion**
+<div class="toc">
+<p class="toc-item toc-top">Présentation de l'application ResidenceConnect</p>
+<p class="toc-item">1. Mise à jour des dépendances</p>
+<ul class="toc-sub"><li>Périmètre, fréquence et type de mise à jour</li><li>Évaluation de l'impact (exemple Dependabot)</li></ul>
+<p class="toc-item">2. Système de supervision et d'alerte</p>
+<ul class="toc-sub"><li>Périmètre, indicateurs et sondes</li><li>Seuils, modalité de signalement et réaction à une alerte</li><li>Exécution et détection réelle d'une indisponibilité</li></ul>
+<p class="toc-item">3. Gestion des anomalies</p>
+<ul class="toc-sub"><li>Processus de collecte, consignation et classification</li><li>Fiche d'une anomalie réelle et son traitement</li><li>Deuxième anomalie : indisponibilité du backend</li></ul>
+<p class="toc-item">4. Journal des versions déployées</p>
+<p class="toc-item">5. Maintenance</p>
+<ul class="toc-sub"><li>Recommandations d'amélioration argumentées</li><li>Problème résolu en collaboration avec le support client</li></ul>
+<p class="toc-item toc-top">Annexe A — Preuves (captures)</p>
+<p class="toc-item toc-top">Conclusion</p>
+</div>
 
 ---
 
