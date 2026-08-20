@@ -10,6 +10,24 @@ et le versionnement suit [SemVer](https://semver.org/lang/fr/)
 
 _Rien pour l'instant._
 
+## [1.0.1] — 2026-08-20
+
+Version de **maintenance** (Bloc 4 — maintien en condition opérationnelle).
+
+### Ajouté
+- **Système de supervision** : sondes de disponibilité planifiées (dashboard web
+  et API Supabase) avec seuils, et **signalement automatique** en cas
+  d'indisponibilité (`.github/workflows/monitoring.yml`, `scripts/healthcheck.mjs`).
+- **Automatisation des mises à jour de dépendances** (Dependabot, hebdomadaire)
+  avec validation par la CI.
+
+### Corrigé
+- **Routes profondes en 404 sur le déploiement** : les URL directes du dashboard
+  (`/login`, `/tickets/:id`) renvoyaient une erreur 404 sur Vercel. Ajout d'un
+  *fallback* SPA (`apps/web/vercel.json`) renvoyant toutes les routes vers
+  `index.html`. Correctif déployé via le processus d'intégration/déploiement
+  continu.
+
 ## [1.0.0] — 2026-07-21
 
 Première version fonctionnelle, fiable et viable — livrable du Bloc 2.
