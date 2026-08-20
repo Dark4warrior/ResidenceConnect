@@ -34,20 +34,6 @@ développée pendant ma formation : la **supervision** en production, le
 
 ---
 
-<div class="pb"></div>
-
-# Correspondance des compétences
-
-| Compétence | Intitulé (résumé) | Section | Éliminatoire |
-| --- | --- | --- | --- |
-| C4.1.1 | Gérer les mises à jour des dépendances | 1 | Non |
-| C4.1.2 | Concevoir un système de supervision et d'alerte | 2 | Oui |
-| C4.2.1 | Consigner les anomalies détectées | 3 | Oui |
-| C4.2.2 | Créer et déployer un correctif | 3 | Non |
-| C4.3.1 | Proposer des axes d'amélioration argumentés | 5 | Non |
-| C4.3.2 | Établir un journal des versions déployées | 4 | Oui |
-| C4.3.3 | Collaborer avec le support client | 5 | Non |
-
 ---
 
 <div class="pb"></div>
