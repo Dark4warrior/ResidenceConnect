@@ -56,6 +56,60 @@ développée pendant ma formation : la **supervision** en production, le
 
 ---
 
+# Présentation de l'application ResidenceConnect
+
+Comme ce dossier peut être lu indépendamment, je présente d'abord l'application
+concernée avant d'aborder sa maintenance.
+
+## Le besoin
+
+ResidenceConnect répond à un besoin concret d'un **bailleur social** : gérer les
+incidents signalés dans ses résidences (fuite d'eau, panne d'ascenseur, problème
+électrique…). Ce suivi, souvent éclaté entre appels téléphoniques et e-mails, est
+ici **centralisé** dans une seule application, de la déclaration jusqu'à la
+résolution.
+
+## Les trois profils d'utilisateurs
+
+- **Locataire** (application mobile) — signale un incident depuis son téléphone,
+  avec une photo, et suit son avancement.
+- **Gestionnaire** (application web) — consulte tous les signalements sur un
+  tableau de bord, les filtre, attribue un technicien, met à jour le statut et
+  suit des indicateurs.
+- **Technicien** (application mobile) — consulte les missions qui lui sont
+  assignées et met à jour leur statut directement sur le terrain.
+
+<p align="center"><img src="images/web-acceuil.png" alt="Tableau de bord du gestionnaire (web)" width="500" /></p>
+
+*Le tableau de bord du gestionnaire (web) : liste filtrable des signalements.*
+
+## Les fonctionnalités principales
+
+- Signalement d'un incident avec photo(s), catégorie et niveau d'urgence.
+- Tableau de bord filtrable, attribution d'un technicien, changement de statut.
+- **Suivi en temps réel** : le locataire voit l'avancement sans rafraîchir.
+- **Journal d'audit** de chaque changement, notifications, export CSV, analytics.
+
+## L'architecture technique
+
+Le projet est un **monorepo** (pnpm + Turborepo) regroupant `apps/mobile`
+(React Native / Expo), `apps/web` (React + Vite), `packages/shared` (types
+partagés) et `supabase/`. Le backend est **Supabase** : base **PostgreSQL** avec
+sécurité au niveau des lignes (RLS), authentification par jeton (**JWT**),
+**stockage** des photos, **temps réel** et **fonctions serverless** (Edge
+Functions).
+
+![Architecture (vue conteneurs) : les applications mobile et web s'adressent au backend Supabase.](images/architecture-conteneurs.svg)
+
+## État en production
+
+L'application est **déployée et exploitée** : le dashboard web sur Vercel,
+l'application mobile distribuée en APK, et le backend sur Supabase. C'est cette
+application **en production** que le présent dossier traite sous l'angle de la
+**maintenance en condition opérationnelle**.
+
+---
+
 # 1. Mise à jour des dépendances
 
 Pour garder l'application à jour et sûre sans y consacrer trop de temps, j'ai mis en place un processus **semi-automatique** de gestion des dépendances : l'outillage propose les mises à jour, et je garde la main sur ce qui est réellement intégré.
