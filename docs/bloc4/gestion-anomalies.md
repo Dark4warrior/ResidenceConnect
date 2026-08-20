@@ -4,6 +4,8 @@
 > (compétence **C4.2.1**), *fiche de consignation* et *traitement d'une anomalie*
 > (compétence **C4.2.2**).
 
+Quand une anomalie survient, je veux pouvoir la **retrouver**, **comprendre son origine** et la **corriger sans rien casser d'autre**. J'ai donc formalisé un processus, que j'illustre ensuite avec une anomalie réellement rencontrée après la mise en production.
+
 ## 1. Processus de collecte et de consignation (C4.2.1)
 
 ### 1.1 Sources de détection

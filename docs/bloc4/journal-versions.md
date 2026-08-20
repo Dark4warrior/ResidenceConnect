@@ -4,6 +4,8 @@
 > (compétence **C4.3.2** : établir un journal des versions déployées en y
 > intégrant la documentation des correctifs réalisés).
 
+Pour savoir à tout moment ce qui a été déployé et pourquoi, je tiens un **journal de version**. Il me sert autant à documenter les correctifs qu'à communiquer les évolutions.
+
 ## 1. Où et comment le journal est tenu
 
 Le journal des versions est **tenu dans le dépôt** à deux niveaux, cohérents

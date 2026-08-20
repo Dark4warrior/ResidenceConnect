@@ -5,6 +5,8 @@
 > identifier les indicateurs, mettre en place des sondes et configurer les
 > signalements pour garantir une disponibilité permanente).
 
+Une fois l'application en production, j'avais besoin de savoir, en continu, si elle restait accessible aux utilisateurs. J'ai donc conçu un système de supervision volontairement simple, mais **réel et automatisé**, plutôt qu'une supervision décrite « sur le papier ».
+
 ## 1. Objectif et périmètre
 
 L'objectif est de **détecter au plus vite toute indisponibilité** des services en
@@ -88,6 +90,28 @@ qui **fait échouer le workflow**. Le signalement est alors double :
    et l'action attendue.
 
 Le signalement est ainsi **tracé** (issue) en plus d'être **poussé** (e-mail).
+J'ai aussi prévu une **déduplication** : si une alerte est déjà ouverte, le
+workflow n'en crée pas de nouvelle, pour éviter de multiplier les issues tant que
+l'incident n'est pas résolu. Extrait du workflow :
+
+```yaml
+- name: Signalement (issue) en cas d'indisponibilité
+  if: failure()
+  run: |
+    open=$(gh issue list --label supervision --state open --json number --jq 'length')
+    if [ "$open" -gt 0 ]; then echo "Alerte déjà ouverte, pas de doublon."; exit 0; fi
+    gh issue create --title "Supervision : indisponibilité détectée..." \
+      --label supervision --body "Sonde en alerte. Logs : $RUN_URL"
+```
+
+### Matrice de supervision
+
+| Indicateur | Sonde | Seuil | Signalement si dépassé |
+| --- | --- | --- | --- |
+| Disponibilité web | `GET /login` (Vercel) | HTTP 200 | e-mail + issue |
+| Disponibilité backend | `GET /auth/v1/settings` (Supabase) | HTTP 200 | e-mail + issue |
+| Joignabilité | toute sonde | réponse < 10 s | e-mail + issue |
+| Latence | toute sonde | temps de réponse < 3 s | e-mail + issue |
 
 ## 6. Exécution et vérification
 

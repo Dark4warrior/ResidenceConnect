@@ -4,6 +4,8 @@
 > et *exemple de problème résolu en collaboration avec le support client*
 > (compétence **C4.3.3**).
 
+La maintenance ne se limite pas à corriger : je réfléchis aussi à **faire évoluer** l'application, en m'appuyant sur ce que la supervision m'apprend et sur les retours reçus.
+
 ## 1. Recommandations d'amélioration (C4.3.1)
 
 Ces axes s'appuient sur les **indicateurs** (disponibilité mesurée par la
@@ -18,8 +20,26 @@ en effort et en gain, et reste **réaliste** au regard du contexte.
 | **Historisation des métriques de supervision** | Les sondes donnent un état instantané, pas de tendance | Pilotage (taux de disponibilité, latence dans le temps) | ~1 j |
 | **Mode hors-ligne / notifications enrichies (mobile)** | Usage terrain avec connexion instable | Renforce l'**attractivité** et le confort d'usage | ~2–3 j |
 
-Priorité recommandée : **fiabiliser le backend** (impact disponibilité le plus
-fort pour un coût faible), puis **Sentry** (visibilité sur les erreurs réelles).
+### Priorisation
+
+Je hiérarchise ces axes selon le rapport **gain / effort** :
+
+1. **Fiabiliser le backend** — c'est la priorité : l'indisponibilité la plus
+   fréquente détectée par la supervision vient de la mise en pause du projet
+   Supabase gratuit. Une offre payante (ou une tâche de maintien en éveil)
+   supprime cette cause pour un coût modéré et un effort faible. Le gain est
+   directement mesurable via la supervision (taux de disponibilité).
+2. **Suivi d'erreurs (Sentry)** — aujourd'hui je sais *si* le service répond,
+   mais pas *quelles erreurs* rencontrent réellement les utilisateurs. Sentry
+   comblerait cet angle mort pour un coût nul (offre développeur) et un effort
+   d'une demi-journée.
+3. Les autres axes (audit d'accessibilité automatisé, historisation des
+   métriques, fonctionnalités mobiles) apportent de la valeur mais sont **moins
+   urgents** : ils améliorent la qualité et l'attractivité sans corriger un
+   problème bloquant.
+
+Cette hiérarchisation reste **réaliste** au regard d'un projet mené seul : chaque
+axe est réalisable avec des outils gratuits ou peu coûteux, et sans refonte.
 
 ## 2. Problème résolu en collaboration avec le support client (C4.3.3)
 
