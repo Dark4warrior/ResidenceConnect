@@ -1,11 +1,23 @@
 <style>
-body { font-size: 13.5px; line-height: 1.6; }
-h1 { font-size: 21px; }
-h2 { font-size: 16px; }
-h3 { font-size: 13.5px; }
-p, li { margin: 0.5em 0; }
-table { font-size: 12px; }
-img { max-height: 10.5cm; }
+body { font-size: 13px; line-height: 1.62; }
+/* Chaque grand titre commence sur une nouvelle page (sauf le tout premier),
+   ce qui aère le document et sépare la page de garde du sommaire. */
+h1 {
+  font-size: 21px;
+  margin: 0 0 0.8em;
+  padding-bottom: 7px;
+  border-bottom: 2px solid #2563eb;
+  page-break-before: always;
+  page-break-after: avoid;
+}
+h1:first-of-type { page-break-before: avoid; }
+h2 { font-size: 16px; margin: 1.6em 0 0.55em; page-break-after: avoid; }
+h3 { font-size: 13.5px; margin: 1.3em 0 0.45em; page-break-after: avoid; }
+p, li { margin: 0.55em 0; }
+table { font-size: 12px; margin: 1.3em 0; page-break-inside: avoid; }
+img { max-height: 10cm; margin: 1.3em auto; display: block; }
+pre { margin: 1.2em 0; padding: 10px 12px; page-break-inside: avoid; }
+blockquote { margin: 1.1em 0; }
 </style>
 
 # ResidenceConnect — Dossier de projet
