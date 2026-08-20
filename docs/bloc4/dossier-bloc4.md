@@ -36,6 +36,8 @@ développée pendant ma formation : la **supervision** en production, le
 
 ---
 
+<div class="pb"></div>
+
 # Présentation de l'application ResidenceConnect
 
 Comme ce dossier peut être lu indépendamment, je présente d'abord l'application
@@ -273,6 +275,26 @@ l'incident n'est pas résolu. Extrait du workflow :
 | Joignabilité | toute sonde | réponse < 10 s | e-mail + issue |
 | Latence | toute sonde | temps de réponse < 3 s | e-mail + issue |
 
+### Procédure de réaction à une alerte
+
+Le signalement ne sert à rien s'il n'est pas suivi d'une réaction. Quand je reçois
+une alerte, j'applique la même démarche :
+
+1. **Confirmer** — j'ouvre le run du workflow pour lire quelle sonde a échoué et
+   pourquoi (code HTTP, timeout, latence).
+2. **Localiser** — je distingue les deux cas typiques : le **dashboard web**
+   (souci de déploiement Vercel) ou le **backend Supabase** (base en pause,
+   quota, incident du fournisseur).
+3. **Rétablir** — je relance le service concerné (par exemple, réactiver le
+   projet Supabase) ou je corrige la configuration de déploiement.
+4. **Vérifier** — je relance le workflow manuellement (`workflow_dispatch`) pour
+   confirmer le retour au vert.
+5. **Clôturer** — je ferme l'issue `supervision`, ce qui rouvre la voie à un
+   prochain signalement en cas de nouvel incident.
+
+C'est exactement le cycle que j'ai suivi lors de la mise en pause réelle de la
+base (voir section suivante).
+
 ## 6. Exécution et vérification
 
 **Exécution nominale** (services disponibles) — sortie d'un run réel du workflow :
@@ -359,7 +381,24 @@ et de la corriger** :
 | Analyse (cause racine) | origine technique |
 | Préconisation de correction | correctif envisagé |
 
-### 1.4 Cycle de traitement
+### 1.4 Classification et priorité
+
+Toutes les anomalies ne se valent pas : je les **qualifie** dès leur consignation
+pour décider de l'ordre de traitement. La priorité combine la **sévérité** et le
+**nombre d'utilisateurs impactés** ; toute anomalie touchant la **sécurité** est
+traitée comme bloquante quelle que soit sa fréquence.
+
+| Sévérité | Définition | Délai de traitement visé |
+| --- | --- | --- |
+| **Bloquante** | Empêche l'usage d'une fonction essentielle, ou faille de sécurité | Immédiat, avant toute autre livraison |
+| **Majeure** | Fonction dégradée sans contournement simple | Dans l'itération courante |
+| **Mineure** | Gêne légère avec contournement, ou défaut cosmétique | Planifiée, sans urgence |
+
+L'anomalie présentée plus bas (404 sur les routes profondes) a ainsi été qualifiée
+de **majeure** : l'application était inutilisable en accès direct à une URL, mais
+la racine `/` restait accessible.
+
+### 1.5 Cycle de traitement
 
 De la détection au rétablissement, chaque anomalie suit le même cycle :
 

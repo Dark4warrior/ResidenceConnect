@@ -113,6 +113,26 @@ l'incident n'est pas résolu. Extrait du workflow :
 | Joignabilité | toute sonde | réponse < 10 s | e-mail + issue |
 | Latence | toute sonde | temps de réponse < 3 s | e-mail + issue |
 
+### Procédure de réaction à une alerte
+
+Le signalement ne sert à rien s'il n'est pas suivi d'une réaction. Quand je reçois
+une alerte, j'applique la même démarche :
+
+1. **Confirmer** — j'ouvre le run du workflow pour lire quelle sonde a échoué et
+   pourquoi (code HTTP, timeout, latence).
+2. **Localiser** — je distingue les deux cas typiques : le **dashboard web**
+   (souci de déploiement Vercel) ou le **backend Supabase** (base en pause,
+   quota, incident du fournisseur).
+3. **Rétablir** — je relance le service concerné (par exemple, réactiver le
+   projet Supabase) ou je corrige la configuration de déploiement.
+4. **Vérifier** — je relance le workflow manuellement (`workflow_dispatch`) pour
+   confirmer le retour au vert.
+5. **Clôturer** — je ferme l'issue `supervision`, ce qui rouvre la voie à un
+   prochain signalement en cas de nouvel incident.
+
+C'est exactement le cycle que j'ai suivi lors de la mise en pause réelle de la
+base (voir section suivante).
+
 ## 6. Exécution et vérification
 
 **Exécution nominale** (services disponibles) — sortie d'un run réel du workflow :
