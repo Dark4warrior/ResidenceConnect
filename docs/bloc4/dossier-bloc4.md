@@ -1,20 +1,34 @@
-# ResidenceConnect — Dossier Bloc 4
+<style>
+body { font-size: 13.5px; line-height: 1.6; }
+h1 { font-size: 21px; }
+h2 { font-size: 16px; }
+h3 { font-size: 13.5px; }
+p, li { margin: 0.5em 0; }
+table { font-size: 12px; }
+img { max-height: 10.5cm; }
+</style>
 
-## Maintenir l'application logicielle en condition opérationnelle
+# ResidenceConnect — Dossier de projet
 
-**Titre visé :** Expert en développement logiciel — RNCP 39583 (niveau 7)
-**École :** Ynov Lyon
+## Bloc 4 : Maintenir l'application logicielle en condition opérationnelle
+
 **Candidat :** Gilchrist Steven LALEYE
-**Date :** 20 août 2026
 
-Ce dossier présente la **gestion du monitoring**, le **traitement des anomalies**
-et la **maintenance** de l'application ResidenceConnect (gestion d'incidents en
-résidence), développée lors du Bloc 2 et exploitée en production.
+**Titre visé :** Expert en développement logiciel (RNCP 39583, niveau 7)
 
-**Code source** : <https://github.com/Dark4warrior/ResidenceConnect>
-**Application web déployée** : <https://residence-connect-web.vercel.app>
-**Application mobile (APK)** : <https://github.com/Dark4warrior/ResidenceConnect/releases/tag/v1.0.0>
-**Comptes de démonstration** : gestionnaire `manager@residenceconnect.dev`, locataire `tenant@residenceconnect.dev`, technicien `technicien@residenceconnect.dev` — mot de passe `Demo1234!`
+**École :** Ynov Lyon
+
+Ce dossier présente comment j'assure le maintien en condition opérationnelle de
+**ResidenceConnect**, l'application de gestion d'incidents en résidence que j'ai
+développée pendant ma formation : la **supervision** en production, le
+**traitement des anomalies** et la **maintenance** du logiciel.
+
+**Accès au projet**
+
+- Code source : <https://github.com/Dark4warrior/ResidenceConnect>
+- Application web déployée : <https://residence-connect-web.vercel.app>
+- Application mobile (APK) : <https://github.com/Dark4warrior/ResidenceConnect/releases/tag/v1.0.0>
+- Comptes de démonstration : gestionnaire `manager@residenceconnect.dev`, locataire `tenant@residenceconnect.dev`, technicien `technicien@residenceconnect.dev` — mot de passe `Demo1234!`
 
 ---
 
@@ -43,6 +57,8 @@ résidence), développée lors du Bloc 2 et exploitée en production.
 ---
 
 # 1. Mise à jour des dépendances
+
+Pour garder l'application à jour et sûre sans y consacrer trop de temps, j'ai mis en place un processus **semi-automatique** de gestion des dépendances : l'outillage propose les mises à jour, et je garde la main sur ce qui est réellement intégré.
 
 ## 1. Périmètre concerné
 
@@ -114,6 +130,8 @@ Le processus est **semi-automatique**, pour concilier fraîcheur et maîtrise :
 ---
 
 # 2. Système de supervision et d'alerte
+
+Une fois l'application en production, j'avais besoin de savoir, en continu, si elle restait accessible aux utilisateurs. J'ai donc conçu un système de supervision volontairement simple, mais **réel et automatisé**, plutôt qu'une supervision décrite « sur le papier ».
 
 ## 1. Objectif et périmètre
 
@@ -198,6 +216,28 @@ qui **fait échouer le workflow**. Le signalement est alors double :
    et l'action attendue.
 
 Le signalement est ainsi **tracé** (issue) en plus d'être **poussé** (e-mail).
+J'ai aussi prévu une **déduplication** : si une alerte est déjà ouverte, le
+workflow n'en crée pas de nouvelle, pour éviter de multiplier les issues tant que
+l'incident n'est pas résolu. Extrait du workflow :
+
+```yaml
+- name: Signalement (issue) en cas d'indisponibilité
+  if: failure()
+  run: |
+    open=$(gh issue list --label supervision --state open --json number --jq 'length')
+    if [ "$open" -gt 0 ]; then echo "Alerte déjà ouverte, pas de doublon."; exit 0; fi
+    gh issue create --title "Supervision : indisponibilité détectée..." \
+      --label supervision --body "Sonde en alerte. Logs : $RUN_URL"
+```
+
+### Matrice de supervision
+
+| Indicateur | Sonde | Seuil | Signalement si dépassé |
+| --- | --- | --- | --- |
+| Disponibilité web | `GET /login` (Vercel) | HTTP 200 | e-mail + issue |
+| Disponibilité backend | `GET /auth/v1/settings` (Supabase) | HTTP 200 | e-mail + issue |
+| Joignabilité | toute sonde | réponse < 10 s | e-mail + issue |
+| Latence | toute sonde | temps de réponse < 3 s | e-mail + issue |
 
 ## 6. Exécution et vérification
 
@@ -247,6 +287,8 @@ issue `supervision`.
 ---
 
 # 3. Gestion des anomalies : consignation, fiche et traitement
+
+Quand une anomalie survient, je veux pouvoir la **retrouver**, **comprendre son origine** et la **corriger sans rien casser d'autre**. J'ai donc formalisé un processus, que j'illustre ensuite avec une anomalie réellement rencontrée après la mise en production.
 
 ## 1. Processus de collecte et de consignation (C4.2.1)
 
@@ -343,6 +385,8 @@ Le correctif a suivi le **processus d'intégration et de déploiement continu** 
 
 # 4. Journal des versions déployées
 
+Pour savoir à tout moment ce qui a été déployé et pourquoi, je tiens un **journal de version**. Il me sert autant à documenter les correctifs qu'à communiquer les évolutions.
+
 ## 1. Où et comment le journal est tenu
 
 Le journal des versions est **tenu dans le dépôt** à deux niveaux, cohérents
@@ -399,6 +443,8 @@ CI/CD et la documentation.
 
 # 5. Maintenance : recommandations et support
 
+La maintenance ne se limite pas à corriger : je réfléchis aussi à **faire évoluer** l'application, en m'appuyant sur ce que la supervision m'apprend et sur les retours reçus.
+
 ## 1. Recommandations d'amélioration (C4.3.1)
 
 Ces axes s'appuient sur les **indicateurs** (disponibilité mesurée par la
@@ -413,8 +459,26 @@ en effort et en gain, et reste **réaliste** au regard du contexte.
 | **Historisation des métriques de supervision** | Les sondes donnent un état instantané, pas de tendance | Pilotage (taux de disponibilité, latence dans le temps) | ~1 j |
 | **Mode hors-ligne / notifications enrichies (mobile)** | Usage terrain avec connexion instable | Renforce l'**attractivité** et le confort d'usage | ~2–3 j |
 
-Priorité recommandée : **fiabiliser le backend** (impact disponibilité le plus
-fort pour un coût faible), puis **Sentry** (visibilité sur les erreurs réelles).
+### Priorisation
+
+Je hiérarchise ces axes selon le rapport **gain / effort** :
+
+1. **Fiabiliser le backend** — c'est la priorité : l'indisponibilité la plus
+   fréquente détectée par la supervision vient de la mise en pause du projet
+   Supabase gratuit. Une offre payante (ou une tâche de maintien en éveil)
+   supprime cette cause pour un coût modéré et un effort faible. Le gain est
+   directement mesurable via la supervision (taux de disponibilité).
+2. **Suivi d'erreurs (Sentry)** — aujourd'hui je sais *si* le service répond,
+   mais pas *quelles erreurs* rencontrent réellement les utilisateurs. Sentry
+   comblerait cet angle mort pour un coût nul (offre développeur) et un effort
+   d'une demi-journée.
+3. Les autres axes (audit d'accessibilité automatisé, historisation des
+   métriques, fonctionnalités mobiles) apportent de la valeur mais sont **moins
+   urgents** : ils améliorent la qualité et l'attractivité sans corriger un
+   problème bloquant.
+
+Cette hiérarchisation reste **réaliste** au regard d'un projet mené seul : chaque
+axe est réalisable avec des outils gratuits ou peu coûteux, et sans refonte.
 
 ## 2. Problème résolu en collaboration avec le support client (C4.3.3)
 
@@ -485,15 +549,15 @@ d'un futur déploiement.
 
 # Conclusion
 
-Le maintien en condition opérationnelle de ResidenceConnect repose sur des
-dispositifs **concrets et vérifiables dans le dépôt** : une **supervision
-automatisée** qui a réellement détecté une indisponibilité et déclenché un
-signalement, un **processus de consignation et de traitement des anomalies**
-illustré par un incident de production réel (404 SPA) corrigé via
-l'intégration/déploiement continu, des **mises à jour de dépendances
-automatisées** encadrées par la CI, et un **journal des versions** documentant
-les correctifs déployés (1.0.0 → 1.0.1).
+En travaillant sur ce bloc, je suis passé de « livrer une application » à « la
+maintenir en production ». J'ai mis en place une supervision qui tourne
+réellement (et qui a d'ailleurs détecté une mise en pause de la base de données),
+j'ai traité une vraie anomalie survenue après le déploiement, automatisé le suivi
+des dépendances et tenu à jour un journal de version documentant chaque correctif.
 
-Ces éléments montrent une application non seulement livrée, mais **exploitée,
-surveillée et maintenue** dans la durée.
+Ce qui m'a le plus marqué, c'est que la plupart des incidents rencontrés ne
+venaient pas du code lui-même mais de son environnement d'exécution
+(configuration de déploiement, service tiers en pause). D'où l'importance de la
+supervision et d'un processus de correction outillé, que je continue à faire
+évoluer selon les axes d'amélioration présentés en section 5.
 

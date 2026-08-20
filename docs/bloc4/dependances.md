@@ -3,6 +3,8 @@
 > Bloc 4 — *Description du processus de mise à jour des dépendances*
 > (compétence **C4.1.1**).
 
+Pour garder l'application à jour et sûre sans y consacrer trop de temps, j'ai mis en place un processus **semi-automatique** de gestion des dépendances : l'outillage propose les mises à jour, et je garde la main sur ce qui est réellement intégré.
+
 ## 1. Périmètre concerné
 
 Le monorepo regroupe plusieurs ensembles de dépendances, tous couverts :
