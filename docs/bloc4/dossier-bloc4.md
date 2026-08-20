@@ -36,8 +36,6 @@ développée pendant ma formation : la **supervision** en production, le
 
 ---
 
-<div class="pb"></div>
-
 # Présentation de l'application ResidenceConnect
 
 Comme ce dossier peut être lu indépendamment, je présente d'abord l'application
@@ -91,8 +89,6 @@ application **en production** que le présent dossier traite sous l'angle de la
 **maintenance en condition opérationnelle**.
 
 ---
-
-<div class="pb"></div>
 
 # 1. Mise à jour des dépendances
 
@@ -166,8 +162,6 @@ Le processus est **semi-automatique**, pour concilier fraîcheur et maîtrise :
 | Garde-fou | CI bloquante (lint, typage, tests) sur chaque PR |
 
 ---
-
-<div class="pb"></div>
 
 # 2. Système de supervision et d'alerte
 
@@ -326,8 +320,6 @@ issue `supervision`.
 
 ---
 
-<div class="pb"></div>
-
 # 3. Gestion des anomalies : consignation, fiche et traitement
 
 Quand une anomalie survient, je veux pouvoir la **retrouver**, **comprendre son origine** et la **corriger sans rien casser d'autre**. J'ai donc formalisé un processus, que j'illustre ensuite avec une anomalie réellement rencontrée après la mise en production.
@@ -425,8 +417,6 @@ Le correctif a suivi le **processus d'intégration et de déploiement continu** 
 
 ---
 
-<div class="pb"></div>
-
 # 4. Journal des versions déployées
 
 Pour savoir à tout moment ce qui a été déployé et pourquoi, je tiens un **journal de version**. Il me sert autant à documenter les correctifs qu'à communiquer les évolutions.
@@ -484,8 +474,6 @@ CI/CD et la documentation.
 5. Le *push* sur `main` déclenche le déploiement (cf. `docs/ci-cd.md`).
 
 ---
-
-<div class="pb"></div>
 
 # 5. Maintenance : recommandations et support
 
@@ -571,8 +559,6 @@ d'un futur déploiement.
 
 ---
 
-<div class="pb"></div>
-
 # Annexe A — Preuves (captures)
 
 ## Supervision en fonctionnement
@@ -594,8 +580,6 @@ d'un futur déploiement.
 *Releases GitHub : les versions déployées (v1.0.0 puis la version de maintenance v1.0.1) et leurs livrables.*
 
 ---
-
-<div class="pb"></div>
 
 # Conclusion
 
