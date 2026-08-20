@@ -42,6 +42,8 @@ La supervision est **automatisée et versionnée dans le dépôt** :
   manuel (`workflow_dispatch`). GitHub Actions est gratuit et illimité sur un
   dépôt public.
 
+![Flux de supervision : la planification déclenche les sondes ; selon les seuils, soit les services sont disponibles, soit une alerte fait échouer le workflow et déclenche une notification e-mail et l'ouverture d'une issue.](images/supervision-flux.svg)
+
 ## 4. Seuils d'alerte
 
 Une sonde passe en **ALERTE** dès qu'un de ces seuils est franchi :

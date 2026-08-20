@@ -41,11 +41,9 @@ et de la corriger** :
 
 ### 1.4 Cycle de traitement
 
-```
-Détection → Issue (consignation) → Qualification (sévérité)
-  → Branche fix/* → Correctif (+ test de non-régression)
-  → Pull request (CI verte) → Intégration develop → Release main → Déploiement
-```
+De la détection au rétablissement, chaque anomalie suit le même cycle :
+
+![Cycle de vie d'une anomalie : détection, consignation en issue, qualification, correction sur une branche avec test de non-régression, validation par pull request (CI verte), déploiement continu, puis vérification du rétablissement.](images/anomalie-cycle.svg)
 
 Ce processus est détaillé dans le plan de correction des bogues
 (`docs/plan-correction-bogues.md`).
