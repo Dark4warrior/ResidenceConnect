@@ -1,0 +1,74 @@
+/* Feuille de style d'export du dossier Bloc 4 (extension VS Code « Markdown PDF »).
+   Objectif : document aéré, hiérarchisé, avec un saut de page par grande section
+   (les sauts sont déclenchés par les éléments <div class="pb"></div> du document). */
+
+body {
+  font-family: -apple-system, "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #1f2937;
+}
+
+/* Saut de page : placé avant chaque grande section. */
+.pb {
+  page-break-before: always;
+  break-before: page;
+}
+
+h1 {
+  font-size: 21px;
+  margin: 0 0 1em;
+  padding-bottom: 9px;
+  border-bottom: 2px solid #2563eb;
+  page-break-after: avoid;
+}
+h2 {
+  font-size: 16px;
+  margin: 2em 0 0.7em;
+  page-break-after: avoid;
+}
+h3 {
+  font-size: 13.5px;
+  margin: 1.5em 0 0.5em;
+  page-break-after: avoid;
+}
+
+p { margin: 0.65em 0; }
+ul, ol { margin: 0.7em 0; padding-left: 1.4em; }
+li { margin: 0.4em 0; }
+
+/* De l'air autour des tableaux et des schémas. */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+  margin: 1.8em 0;
+  page-break-inside: avoid;
+}
+th, td { border: 1px solid #cbd5e1; padding: 7px 10px; text-align: left; vertical-align: top; }
+th { background: #f1f5f9; }
+
+code {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  background: #f1f5f9;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+pre {
+  font-size: 11px;
+  line-height: 1.45;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  padding: 12px 14px;
+  margin: 1.8em 0;
+  overflow: auto;
+  page-break-inside: avoid;
+}
+pre code { background: none; padding: 0; }
+
+img { max-width: 100%; max-height: 10cm; display: block; margin: 2em auto; }
+
+blockquote { color: #475569; border-left: 3px solid #cbd5e1; padding-left: 12px; margin: 1.2em 0; }
+hr { border: none; margin: 1.5em 0; }

@@ -1,25 +1,3 @@
-<style>
-body { font-size: 13px; line-height: 1.62; }
-/* Chaque grand titre commence sur une nouvelle page (sauf le tout premier),
-   ce qui aère le document et sépare la page de garde du sommaire. */
-h1 {
-  font-size: 21px;
-  margin: 0 0 0.8em;
-  padding-bottom: 7px;
-  border-bottom: 2px solid #2563eb;
-  page-break-before: always;
-  page-break-after: avoid;
-}
-h1:first-of-type { page-break-before: avoid; }
-h2 { font-size: 16px; margin: 1.6em 0 0.55em; page-break-after: avoid; }
-h3 { font-size: 13.5px; margin: 1.3em 0 0.45em; page-break-after: avoid; }
-p, li { margin: 0.55em 0; }
-table { font-size: 12px; margin: 1.3em 0; page-break-inside: avoid; }
-img { max-height: 10cm; margin: 1.3em auto; display: block; }
-pre { margin: 1.2em 0; padding: 10px 12px; page-break-inside: avoid; }
-blockquote { margin: 1.1em 0; }
-</style>
-
 # ResidenceConnect — Dossier de projet
 
 ## Bloc 4 : Maintenir l'application logicielle en condition opérationnelle
@@ -44,6 +22,8 @@ développée pendant ma formation : la **supervision** en production, le
 
 ---
 
+<div class="pb"></div>
+
 # Sommaire
 
 1. La description du processus de mise à jour des dépendances
@@ -53,6 +33,8 @@ développée pendant ma formation : la **supervision** en production, le
 5. La maintenance : recommandations d'amélioration et support client
 
 ---
+
+<div class="pb"></div>
 
 # Correspondance des compétences
 
@@ -67,6 +49,8 @@ développée pendant ma formation : la **supervision** en production, le
 | C4.3.3 | Collaborer avec le support client | 5 | Non |
 
 ---
+
+<div class="pb"></div>
 
 # Présentation de l'application ResidenceConnect
 
@@ -121,6 +105,8 @@ application **en production** que le présent dossier traite sous l'angle de la
 **maintenance en condition opérationnelle**.
 
 ---
+
+<div class="pb"></div>
 
 # 1. Mise à jour des dépendances
 
@@ -194,6 +180,8 @@ Le processus est **semi-automatique**, pour concilier fraîcheur et maîtrise :
 | Garde-fou | CI bloquante (lint, typage, tests) sur chaque PR |
 
 ---
+
+<div class="pb"></div>
 
 # 2. Système de supervision et d'alerte
 
@@ -352,6 +340,8 @@ issue `supervision`.
 
 ---
 
+<div class="pb"></div>
+
 # 3. Gestion des anomalies : consignation, fiche et traitement
 
 Quand une anomalie survient, je veux pouvoir la **retrouver**, **comprendre son origine** et la **corriger sans rien casser d'autre**. J'ai donc formalisé un processus, que j'illustre ensuite avec une anomalie réellement rencontrée après la mise en production.
@@ -449,6 +439,8 @@ Le correctif a suivi le **processus d'intégration et de déploiement continu** 
 
 ---
 
+<div class="pb"></div>
+
 # 4. Journal des versions déployées
 
 Pour savoir à tout moment ce qui a été déployé et pourquoi, je tiens un **journal de version**. Il me sert autant à documenter les correctifs qu'à communiquer les évolutions.
@@ -506,6 +498,8 @@ CI/CD et la documentation.
 5. Le *push* sur `main` déclenche le déploiement (cf. `docs/ci-cd.md`).
 
 ---
+
+<div class="pb"></div>
 
 # 5. Maintenance : recommandations et support
 
@@ -591,6 +585,8 @@ d'un futur déploiement.
 
 ---
 
+<div class="pb"></div>
+
 # Annexe A — Preuves (captures)
 
 ## Supervision en fonctionnement
@@ -612,6 +608,8 @@ d'un futur déploiement.
 *Releases GitHub : les versions déployées (v1.0.0 puis la version de maintenance v1.0.1) et leurs livrables.*
 
 ---
+
+<div class="pb"></div>
 
 # Conclusion
 
