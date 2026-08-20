@@ -17,7 +17,7 @@
     "@expo/metro-runtime": "~6.1.2",
     "@residenceconnect/shared": "workspace:*",
     "@supabase/supabase-js": "^2.46.1",
-    "expo": "~54.0.35",
+    "expo": "~57.0.13",
     "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.13",
     "expo-crypto": "~15.0.9",
