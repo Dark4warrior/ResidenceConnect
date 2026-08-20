@@ -13,11 +13,13 @@ body {
 
 h1 {
   font-size: 18.5px;
-  margin: 0 0 0.7em;
+  margin: 1.9em 0 0.7em; /* un peu d'air avant chaque grand titre (sans saut de page) */
   padding-bottom: 7px;
   border-bottom: 2px solid #2563eb;
   page-break-after: avoid;
 }
+/* Pas d'espace superflu avant le tout premier titre (page de garde). */
+h1:first-of-type { margin-top: 0; }
 h2 { font-size: 14.5px; margin: 1.3em 0 0.5em; page-break-after: avoid; }
 h3 { font-size: 12.5px; margin: 1.05em 0 0.4em; page-break-after: avoid; }
 
