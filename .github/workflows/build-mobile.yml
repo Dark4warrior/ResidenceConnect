@@ -31,7 +31,7 @@ jobs:
 
       - name: Installation de pnpm
         if: steps.guard.outputs.enabled == 'true'
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Installation de Node.js
         if: steps.guard.outputs.enabled == 'true'
