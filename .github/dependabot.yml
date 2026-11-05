@@ -6,7 +6,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "semiannually"
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(deps)"
